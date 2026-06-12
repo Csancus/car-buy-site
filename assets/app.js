@@ -9,10 +9,7 @@
 // Constants
 // ============================================================
 const STORAGE_KEY = 'carbuy_cars';
-const CORS_PROXIES = [
-  url => `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
-  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-];
+const IS_LOCAL = ['localhost', '127.0.0.1'].includes(window.location.hostname);
 
 // ============================================================
 // State
@@ -66,23 +63,43 @@ function saveToStorage() {
 }
 
 // ============================================================
-// CORS Fetch
+// API helpers (local server mode)
 // ============================================================
-async function fetchViaProxy(url) {
-  let lastErr;
-  for (const proxyFn of CORS_PROXIES) {
-    try {
-      const proxyUrl = proxyFn(url);
-      const resp = await fetch(proxyUrl, { signal: AbortSignal.timeout(20000) });
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const text = await resp.text();
-      if (!text || text.length < 500) throw new Error('Empty or too short response');
-      return text;
-    } catch (e) {
-      lastErr = e;
-    }
-  }
-  throw lastErr || new Error('Minden proxy sikertelen');
+async function apiAddCar(url) {
+  const resp = await fetch('/api/cars/add', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url }),
+  });
+  const data = await resp.json();
+  if (!resp.ok) throw new Error(data.error || `HTTP ${resp.status}`);
+  return data;
+}
+
+async function apiDeleteCar(id) {
+  await fetch(`/api/cars/${id}`, { method: 'DELETE' });
+}
+
+async function apiAddComment(id, author, text) {
+  const resp = await fetch(`/api/cars/${id}/comment`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ author, text }),
+  });
+  return resp.json();
+}
+
+async function apiSaveOrder(ids) {
+  await fetch('/api/cars/order', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ids }),
+  });
+}
+
+async function apiLoadCars() {
+  const resp = await fetch('/api/cars');
+  return resp.json();
 }
 
 // ============================================================
@@ -527,7 +544,7 @@ function attachCardEvents(card, car) {
   });
 
   // Order up
-  card.querySelector('.btn-up').addEventListener('click', () => {
+  card.querySelector('.btn-up').addEventListener('click', async () => {
     const c = getCarById(carId);
     if (!c) return;
     const idx = cars.findIndex(x => x.id === c.id);
@@ -536,12 +553,13 @@ function attachCardEvents(card, car) {
       cars[idx - 1].order = idx;
       cars.sort((a, b) => a.order - b.order);
       saveToStorage();
+      if (IS_LOCAL) await apiSaveOrder(cars.map(x => x.id));
       renderAll();
     }
   });
 
   // Order down
-  card.querySelector('.btn-down').addEventListener('click', () => {
+  card.querySelector('.btn-down').addEventListener('click', async () => {
     const c = getCarById(carId);
     if (!c) return;
     const idx = cars.findIndex(x => x.id === c.id);
@@ -550,15 +568,16 @@ function attachCardEvents(card, car) {
       cars[idx + 1].order = idx;
       cars.sort((a, b) => a.order - b.order);
       saveToStorage();
+      if (IS_LOCAL) await apiSaveOrder(cars.map(x => x.id));
       renderAll();
     }
   });
 
   // Delete
-  card.querySelector('.btn-delete').addEventListener('click', () => {
+  card.querySelector('.btn-delete').addEventListener('click', async () => {
     if (confirm(`Biztosan törlöd ezt a hirdetést?\n${car.name}`)) {
+      if (IS_LOCAL) await apiDeleteCar(carId);
       cars = cars.filter(c => c.id !== carId);
-      // Reassign orders
       cars.forEach((c, i) => { c.order = i; });
       saveToStorage();
       renderAll();
@@ -578,7 +597,12 @@ function attachCardEvents(card, car) {
     const c = getCarById(carId);
     if (!c) return;
     if (!c.comments) c.comments = [];
-    c.comments.push({ author, text, at: new Date().toISOString() });
+    if (IS_LOCAL) {
+      const updated = await apiAddComment(carId, author, text);
+      c.comments = updated.comments || c.comments;
+    } else {
+      c.comments.push({ author, text, at: new Date().toISOString() });
+    }
     saveToStorage();
     renderComments(card, c);
     authorEl.value = '';
@@ -764,23 +788,18 @@ async function handleAddCar() {
   urlInput.disabled = true;
 
   try {
-    const html = await fetchViaProxy(rawUrl);
-    const car = parseCarPage(html, rawUrl);
-
-    // Check duplicate by id again (in case URL didn't have id but parsed does)
-    if (cars.some(c => c.id === car.id)) {
-      showError('Ez a hirdetés már hozzá van adva!');
+    if (!IS_LOCAL) {
+      showError('Az URL-alapú hozzáadás csak a helyi szerveren működik. Futtasd: npm start  →  http://localhost:3333');
       return;
     }
-
-    car.order = cars.length;
+    const car = await apiAddCar(rawUrl);
     cars.push(car);
     saveToStorage();
     renderAll();
     renderCompareTable();
     urlInput.value = '';
   } catch (e) {
-    showError(`Hiba a betöltés során: ${e.message || 'Ismeretlen hiba'}. Ellenőrizd az URL-t és próbáld újra.`);
+    showError(`Hiba: ${e.message || 'Ismeretlen hiba'}`);
     console.error(e);
   } finally {
     btnText.style.display = 'inline';
@@ -861,7 +880,7 @@ function initSortable() {
     dragClass: 'sortable-drag',
     handle: '.card-header-row',
     filter: '.btn-order, .btn-delete, .slide-btn, .btn-toggle-equip, .comment-form, a',
-    onEnd: () => {
+    onEnd: async () => {
       const cardEls = grid.querySelectorAll('.car-card');
       cardEls.forEach((el, i) => {
         const id = parseInt(el.dataset.id, 10) || el.dataset.id;
@@ -869,6 +888,7 @@ function initSortable() {
         if (car) car.order = i;
       });
       saveToStorage();
+      if (IS_LOCAL) await apiSaveOrder(cars.map(x => x.id));
       renderCompareTable();
     },
   });
@@ -877,17 +897,26 @@ function initSortable() {
 // ============================================================
 // Init
 // ============================================================
-function init() {
-  // Load from storage
-  const stored = loadFromStorage();
-  if (stored && stored.length > 0) {
-    cars = stored;
-    renderAll();
+async function init() {
+  // Load from storage or API
+  if (IS_LOCAL) {
+    try {
+      cars = await apiLoadCars();
+      cars.forEach((c, i) => { if (c.order == null) c.order = i; });
+      saveToStorage();
+    } catch (e) {
+      console.warn('API load failed, falling back to localStorage', e);
+      cars = loadFromStorage() || [];
+    }
   } else {
-    // Try to load from local data/cars.json
-    tryFetchLocalData();
-    renderAll();
+    const stored = loadFromStorage();
+    if (stored && stored.length > 0) {
+      cars = stored;
+    } else {
+      await tryFetchLocalData();
+    }
   }
+  renderAll();
 
   // Add car button
   document.getElementById('btnAdd').addEventListener('click', handleAddCar);
