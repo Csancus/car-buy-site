@@ -2,6 +2,7 @@
 const express = require('express');
 const https = require('https');
 const http = require('http');
+const zlib = require('zlib');
 const fs = require('fs');
 const path = require('path');
 
@@ -30,9 +31,16 @@ function fetchUrl(targetUrl, redirectCount = 0) {
     const req = lib.get(targetUrl, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
         'Accept-Language': 'hu-HU,hu;q=0.9,en;q=0.8',
-        'Accept-Encoding': 'identity',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'none',
+        'Sec-Fetch-User': '?1',
+        'Cache-Control': 'max-age=0',
       }
     }, (res) => {
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
@@ -48,7 +56,19 @@ function fetchUrl(targetUrl, redirectCount = 0) {
       }
       const chunks = [];
       res.on('data', c => chunks.push(c));
-      res.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
+      res.on('end', () => {
+        const buf = Buffer.concat(chunks);
+        const enc = (res.headers['content-encoding'] || '').toLowerCase();
+        if (enc === 'br') {
+          zlib.brotliDecompress(buf, (err, out) => err ? reject(err) : resolve(out.toString('utf8')));
+        } else if (enc === 'gzip') {
+          zlib.gunzip(buf, (err, out) => err ? reject(err) : resolve(out.toString('utf8')));
+        } else if (enc === 'deflate') {
+          zlib.inflate(buf, (err, out) => err ? reject(err) : resolve(out.toString('utf8')));
+        } else {
+          resolve(buf.toString('utf8'));
+        }
+      });
     });
     req.on('error', reject);
     req.setTimeout(20000, () => { req.destroy(); reject(new Error('Timeout')); });

@@ -586,7 +586,7 @@ function attachCardEvents(card, car) {
   });
 
   // Comment form
-  card.querySelector('.comment-form').addEventListener('submit', (e) => {
+  card.querySelector('.comment-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const authorEl = card.querySelector('.comment-input-author');
     const textEl = card.querySelector('.comment-input-text');
@@ -789,7 +789,7 @@ async function handleAddCar() {
 
   try {
     if (!IS_LOCAL) {
-      showError('Az URL-alapú hozzáadás csak a helyi szerveren működik. Futtasd: npm start  →  http://localhost:3333');
+      showError('Az autók hozzáadásához futtasd a helyi szervert: npm start → http://localhost:3333\nOtt add hozzá az autókat, majd commitold és pushold a data/cars.json fájlt.');
       return;
     }
     const car = await apiAddCar(rawUrl);
