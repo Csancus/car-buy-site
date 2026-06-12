@@ -9,7 +9,6 @@
 // Constants
 // ============================================================
 const STORAGE_KEY = 'carbuy_cars';
-const IS_LOCAL = ['localhost', '127.0.0.1'].includes(window.location.hostname);
 
 // ============================================================
 // State
@@ -553,7 +552,7 @@ function attachCardEvents(card, car) {
       cars[idx - 1].order = idx;
       cars.sort((a, b) => a.order - b.order);
       saveToStorage();
-      if (IS_LOCAL) await apiSaveOrder(cars.map(x => x.id));
+      await apiSaveOrder(cars.map(x => x.id));
       renderAll();
     }
   });
@@ -568,7 +567,7 @@ function attachCardEvents(card, car) {
       cars[idx + 1].order = idx;
       cars.sort((a, b) => a.order - b.order);
       saveToStorage();
-      if (IS_LOCAL) await apiSaveOrder(cars.map(x => x.id));
+      await apiSaveOrder(cars.map(x => x.id));
       renderAll();
     }
   });
@@ -576,7 +575,7 @@ function attachCardEvents(card, car) {
   // Delete
   card.querySelector('.btn-delete').addEventListener('click', async () => {
     if (confirm(`Biztosan törlöd ezt a hirdetést?\n${car.name}`)) {
-      if (IS_LOCAL) await apiDeleteCar(carId);
+      await apiDeleteCar(carId);
       cars = cars.filter(c => c.id !== carId);
       cars.forEach((c, i) => { c.order = i; });
       saveToStorage();
@@ -597,12 +596,8 @@ function attachCardEvents(card, car) {
     const c = getCarById(carId);
     if (!c) return;
     if (!c.comments) c.comments = [];
-    if (IS_LOCAL) {
-      const updated = await apiAddComment(carId, author, text);
-      c.comments = updated.comments || c.comments;
-    } else {
-      c.comments.push({ author, text, at: new Date().toISOString() });
-    }
+    const updated = await apiAddComment(carId, author, text);
+    c.comments = updated.comments || c.comments;
     saveToStorage();
     renderComments(card, c);
     authorEl.value = '';
@@ -788,10 +783,6 @@ async function handleAddCar() {
   urlInput.disabled = true;
 
   try {
-    if (!IS_LOCAL) {
-      showError('Az autók hozzáadásához futtasd a helyi szervert: npm start → http://localhost:3333\nOtt add hozzá az autókat, majd commitold és pushold a data/cars.json fájlt.');
-      return;
-    }
     const car = await apiAddCar(rawUrl);
     cars.push(car);
     saveToStorage();
@@ -888,7 +879,7 @@ function initSortable() {
         if (car) car.order = i;
       });
       saveToStorage();
-      if (IS_LOCAL) await apiSaveOrder(cars.map(x => x.id));
+      await apiSaveOrder(cars.map(x => x.id));
       renderCompareTable();
     },
   });
@@ -898,23 +889,13 @@ function initSortable() {
 // Init
 // ============================================================
 async function init() {
-  // Load from storage or API
-  if (IS_LOCAL) {
-    try {
-      cars = await apiLoadCars();
-      cars.forEach((c, i) => { if (c.order == null) c.order = i; });
-      saveToStorage();
-    } catch (e) {
-      console.warn('API load failed, falling back to localStorage', e);
-      cars = loadFromStorage() || [];
-    }
-  } else {
-    const stored = loadFromStorage();
-    if (stored && stored.length > 0) {
-      cars = stored;
-    } else {
-      await tryFetchLocalData();
-    }
+  try {
+    cars = await apiLoadCars();
+    cars.forEach((c, i) => { if (c.order == null) c.order = i; });
+    saveToStorage();
+  } catch (e) {
+    console.warn('API load failed, using localStorage cache', e);
+    cars = loadFromStorage() || [];
   }
   renderAll();
 
