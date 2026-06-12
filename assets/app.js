@@ -405,7 +405,6 @@ function renderAll() {
     fragment.appendChild(cardEl);
   }
   grid.appendChild(fragment);
-  if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 function buildCard(car) {
@@ -982,9 +981,6 @@ async function init() {
 
   // Theme toggle
   document.getElementById('btnTheme').addEventListener('click', toggleTheme);
-
-  // Lucide icons
-  if (typeof lucide !== 'undefined') lucide.createIcons();
 
   // SortableJS
   initSortable();

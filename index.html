@@ -16,7 +16,10 @@
     <div class="header-inner">
       <div class="header-brand">
         <div class="header-logo">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M19 7h1a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2"/><path d="M5 7h14l1 6H4z"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="16.5" cy="17.5" r="1.5"/></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 17H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1"/><path d="M19 7h1a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2"/>
+            <path d="M5 7h14l1 6H4z"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="16.5" cy="17.5" r="1.5"/>
+          </svg>
         </div>
         <div>
           <h1 class="header-title">Autó Összehasonlító</h1>
@@ -24,19 +27,22 @@
         </div>
       </div>
       <div class="header-actions">
-        <button id="btnCompare" class="btn btn-outline" title="Összehasonlító táblázat">
-          <svg data-lucide="scale" class="btn-icon"></svg> Összehasonlítás
+        <button id="btnCompare" class="btn btn-outline">
+          <svg class="ic" viewBox="0 0 24 24"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21H17"/><path d="M12 3v18"/><path d="M3 7h2c2 0 4-1 6-2 2 1 4 2 6 2h2"/></svg>
+          Összehasonlítás
         </button>
-        <button id="btnExport" class="btn btn-outline" title="Adatok exportálása">
-          <svg data-lucide="download" class="btn-icon"></svg> Export
+        <button id="btnExport" class="btn btn-outline">
+          <svg class="ic" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+          Export
         </button>
-        <label class="btn btn-outline" title="Adatok importálása">
-          <svg data-lucide="upload" class="btn-icon"></svg> Import
+        <label class="btn btn-outline">
+          <svg class="ic" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+          Import
           <input type="file" id="fileImport" accept=".json" style="display:none" />
         </label>
         <button id="btnTheme" class="btn btn-icon-only" title="Témaváltás">
-          <svg data-lucide="moon" class="theme-icon-dark"></svg>
-          <svg data-lucide="sun"  class="theme-icon-light"></svg>
+          <svg class="ic theme-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+          <svg class="ic theme-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
         </button>
       </div>
     </div>
@@ -45,26 +51,18 @@
   <!-- Add car form -->
   <div class="add-car-section">
     <div class="add-car-inner">
-      <div class="add-car-form">
-        <div class="input-group">
-          <div class="input-wrapper">
-            <svg data-lucide="link" class="input-icon"></svg>
-            <input
-              type="url"
-              id="urlInput"
-              class="url-input"
-              placeholder="Illeszd be a hasznaltauto.hu hirdetés URL-jét..."
-              autocomplete="off"
-            />
-          </div>
-          <button id="btnAdd" class="btn btn-primary">
-            <svg data-lucide="plus" class="btn-icon" id="btnAddIcon"></svg>
-            <span id="btnAddText">Autó hozzáadása</span>
-            <span id="btnAddSpinner" class="spinner" style="display:none"></span>
-          </button>
+      <div class="input-group">
+        <div class="input-wrapper">
+          <svg class="ic input-ic" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          <input type="url" id="urlInput" class="url-input" placeholder="Illeszd be a hasznaltauto.hu hirdetés URL-jét..." autocomplete="off" />
         </div>
-        <div id="addError" class="error-msg" style="display:none"></div>
+        <button id="btnAdd" class="btn btn-primary">
+          <svg class="ic" id="btnAddIcon" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+          <span id="btnAddText">Autó hozzáadása</span>
+          <span id="btnAddSpinner" class="spinner" style="display:none"></span>
+        </button>
       </div>
+      <div id="addError" class="error-msg" style="display:none"></div>
     </div>
   </div>
 
@@ -73,11 +71,12 @@
     <div class="compare-inner">
       <div class="compare-header">
         <h2 class="compare-title">
-          <svg data-lucide="scale" class="section-icon"></svg>
+          <svg class="ic" viewBox="0 0 24 24"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21H17"/><path d="M12 3v18"/><path d="M3 7h2c2 0 4-1 6-2 2 1 4 2 6 2h2"/></svg>
           Összehasonlító táblázat
         </h2>
         <button id="btnCloseCompare" class="btn btn-ghost btn-sm">
-          <svg data-lucide="x" class="btn-icon"></svg> Bezárás
+          <svg class="ic" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          Bezárás
         </button>
       </div>
       <div class="compare-scroll">
@@ -92,7 +91,10 @@
   <!-- Empty state -->
   <div id="emptyState" class="empty-state">
     <div class="empty-icon">
-      <svg data-lucide="car" class="empty-car-icon"></svg>
+      <svg class="ic-empty-car" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 17H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1"/><path d="M19 7h1a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2"/>
+        <path d="M5 7h14l1 6H4z"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="16.5" cy="17.5" r="1.5"/>
+      </svg>
     </div>
     <h2 class="empty-title">Még nincsenek mentett hirdetések</h2>
     <p class="empty-desc">Illeszd be egy használtautó.hu hirdetés URL-jét fent, és az alkalmazás automatikusan beolvassa az összes adatot.</p>
@@ -109,14 +111,15 @@
           <img class="slideshow-img" src="" alt="" loading="lazy" />
         </div>
         <button class="slide-btn slide-prev">
-          <svg data-lucide="chevron-left"></svg>
+          <svg class="ic" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
         </button>
         <button class="slide-btn slide-next">
-          <svg data-lucide="chevron-right"></svg>
+          <svg class="ic" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
         </button>
         <span class="slide-counter">1/1</span>
         <a class="card-link-badge" href="#" target="_blank" rel="noopener">
-          <svg data-lucide="external-link"></svg> Hirdetés
+          <svg class="ic" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Hirdetés
         </a>
       </div>
 
@@ -125,13 +128,13 @@
           <h2 class="car-name"></h2>
           <div class="card-order-btns">
             <button class="btn-order btn-up" title="Feljebb">
-              <svg data-lucide="chevron-up"></svg>
+              <svg class="ic" viewBox="0 0 24 24"><path d="m18 15-6-6-6 6"/></svg>
             </button>
             <button class="btn-order btn-down" title="Lejjebb">
-              <svg data-lucide="chevron-down"></svg>
+              <svg class="ic" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
             </button>
             <button class="btn-delete" title="Törlés">
-              <svg data-lucide="trash-2"></svg>
+              <svg class="ic" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
             </button>
           </div>
         </div>
@@ -147,14 +150,16 @@
 
         <div class="top5-section">
           <h3 class="section-title">
-            <svg data-lucide="sparkles" class="section-icon"></svg> Top 5 kiemelés
+            <svg class="ic-sec" viewBox="0 0 24 24"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>
+            Top 5 kiemelés
           </h3>
           <div class="top5-badges"></div>
         </div>
 
         <div class="equipment-section">
           <h3 class="section-title">
-            <svg data-lucide="wrench" class="section-icon"></svg> Felszereltség
+            <svg class="ic-sec" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+            Felszereltség
           </h3>
           <div class="equipment-preview"></div>
           <button class="btn-toggle-equip">Összes mutatása</button>
@@ -163,14 +168,16 @@
 
         <div class="description-section">
           <h3 class="section-title">
-            <svg data-lucide="file-text" class="section-icon"></svg> Leírás
+            <svg class="ic-sec" viewBox="0 0 24 24"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+            Leírás
           </h3>
           <p class="car-description"></p>
         </div>
 
         <div class="comments-section">
           <h3 class="section-title">
-            <svg data-lucide="message-circle" class="section-icon"></svg> Megjegyzések
+            <svg class="ic-sec" viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+            Megjegyzések
           </h3>
           <ul class="comments-list"></ul>
           <form class="comment-form">
@@ -179,7 +186,8 @@
               <input type="text" class="comment-input-text" placeholder="Megjegyzés..." maxlength="500" required />
             </div>
             <button type="submit" class="btn btn-sm btn-primary">
-              <svg data-lucide="send" class="btn-icon"></svg> Hozzáadás
+              <svg class="ic" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+              Hozzáadás
             </button>
           </form>
         </div>
@@ -191,21 +199,19 @@
   <div class="modal-overlay" id="confirmModal">
     <div class="modal-box">
       <div class="modal-icon-wrap">
-        <svg data-lucide="trash-2" class="modal-trash-icon"></svg>
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--red)">
+          <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
+        </svg>
       </div>
       <div class="modal-title">Törlés megerősítése</div>
       <div class="modal-message" id="confirmModalMsg"></div>
       <div class="modal-actions">
         <button class="btn-modal-cancel" id="confirmModalCancel">Mégsem</button>
-        <button class="btn-modal-confirm" id="confirmModalOk">
-          <svg data-lucide="trash-2" style="width:14px;height:14px;margin-right:5px;vertical-align:middle"></svg>
-          Törlés
-        </button>
+        <button class="btn-modal-confirm" id="confirmModalOk">Törlés</button>
       </div>
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/lucide@0.344.0/dist/umd/lucide.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <script src="assets/app.js"></script>
 </body>
