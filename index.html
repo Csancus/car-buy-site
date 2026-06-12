@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="hu">
+<html lang="hu" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -10,27 +10,34 @@
   <link rel="stylesheet" href="assets/style.css" />
 </head>
 <body>
+
   <!-- Header -->
   <header class="site-header">
     <div class="header-inner">
       <div class="header-brand">
-        <span class="header-icon">🚗</span>
+        <div class="header-logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M19 7h1a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2"/><path d="M5 7h14l1 6H4z"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="16.5" cy="17.5" r="1.5"/></svg>
+        </div>
         <div>
           <h1 class="header-title">Autó Összehasonlító</h1>
-          <p class="header-subtitle">Használtautó.hu hirdetések összehasonlítása</p>
+          <p class="header-subtitle">Használtautó.hu hirdetések elemzése</p>
         </div>
       </div>
       <div class="header-actions">
-        <button id="btnCompare" class="btn btn-outline-light" title="Összehasonlító táblázat">
-          <span class="btn-icon">⚖️</span> Összehasonlítás
+        <button id="btnCompare" class="btn btn-outline" title="Összehasonlító táblázat">
+          <svg data-lucide="scale" class="btn-icon"></svg> Összehasonlítás
         </button>
-        <button id="btnExport" class="btn btn-outline-light" title="Adatok exportálása">
-          <span class="btn-icon">💾</span> Export
+        <button id="btnExport" class="btn btn-outline" title="Adatok exportálása">
+          <svg data-lucide="download" class="btn-icon"></svg> Export
         </button>
-        <label class="btn btn-outline-light" title="Adatok importálása">
-          <span class="btn-icon">📂</span> Import
+        <label class="btn btn-outline" title="Adatok importálása">
+          <svg data-lucide="upload" class="btn-icon"></svg> Import
           <input type="file" id="fileImport" accept=".json" style="display:none" />
         </label>
+        <button id="btnTheme" class="btn btn-icon-only" title="Témaváltás">
+          <svg data-lucide="moon" class="theme-icon-dark"></svg>
+          <svg data-lucide="sun"  class="theme-icon-light"></svg>
+        </button>
       </div>
     </div>
   </header>
@@ -40,15 +47,19 @@
     <div class="add-car-inner">
       <div class="add-car-form">
         <div class="input-group">
-          <input
-            type="url"
-            id="urlInput"
-            class="url-input"
-            placeholder="Illeszd be a hasznaltauto.hu hirdetés URL-jét..."
-            autocomplete="off"
-          />
+          <div class="input-wrapper">
+            <svg data-lucide="link" class="input-icon"></svg>
+            <input
+              type="url"
+              id="urlInput"
+              class="url-input"
+              placeholder="Illeszd be a hasznaltauto.hu hirdetés URL-jét..."
+              autocomplete="off"
+            />
+          </div>
           <button id="btnAdd" class="btn btn-primary">
-            <span id="btnAddText">+ Autó hozzáadása</span>
+            <svg data-lucide="plus" class="btn-icon" id="btnAddIcon"></svg>
+            <span id="btnAddText">Autó hozzáadása</span>
             <span id="btnAddSpinner" class="spinner" style="display:none"></span>
           </button>
         </div>
@@ -57,12 +68,17 @@
     </div>
   </div>
 
-  <!-- Comparison table (hidden by default) -->
+  <!-- Comparison table -->
   <div id="compareSection" class="compare-section" style="display:none">
     <div class="compare-inner">
       <div class="compare-header">
-        <h2 class="compare-title">⚖️ Összehasonlító táblázat</h2>
-        <button id="btnCloseCompare" class="btn btn-ghost">✕ Bezárás</button>
+        <h2 class="compare-title">
+          <svg data-lucide="scale" class="section-icon"></svg>
+          Összehasonlító táblázat
+        </h2>
+        <button id="btnCloseCompare" class="btn btn-ghost btn-sm">
+          <svg data-lucide="x" class="btn-icon"></svg> Bezárás
+        </button>
       </div>
       <div class="compare-scroll">
         <table id="compareTable" class="compare-table">
@@ -75,34 +91,48 @@
 
   <!-- Empty state -->
   <div id="emptyState" class="empty-state">
-    <div class="empty-icon">🚘</div>
+    <div class="empty-icon">
+      <svg data-lucide="car" class="empty-car-icon"></svg>
+    </div>
     <h2 class="empty-title">Még nincsenek mentett hirdetések</h2>
-    <p class="empty-desc">Illeszd be egy használtautó.hu hirdetés URL-jét fent, és az alkalmazás automatikusan beolvassa az adatokat.</p>
+    <p class="empty-desc">Illeszd be egy használtautó.hu hirdetés URL-jét fent, és az alkalmazás automatikusan beolvassa az összes adatot.</p>
   </div>
 
   <!-- Cars grid -->
   <main class="cars-grid" id="carsGrid"></main>
 
-  <!-- Card template (hidden, cloned via JS) -->
+  <!-- Card template -->
   <template id="cardTemplate">
     <article class="car-card" data-id="">
       <div class="card-slideshow">
         <div class="slideshow-images">
           <img class="slideshow-img" src="" alt="" loading="lazy" />
         </div>
-        <button class="slide-btn slide-prev">‹</button>
-        <button class="slide-btn slide-next">›</button>
+        <button class="slide-btn slide-prev">
+          <svg data-lucide="chevron-left"></svg>
+        </button>
+        <button class="slide-btn slide-next">
+          <svg data-lucide="chevron-right"></svg>
+        </button>
         <span class="slide-counter">1/1</span>
-        <a class="card-link-badge" href="#" target="_blank" rel="noopener">🔗 Hirdetés</a>
+        <a class="card-link-badge" href="#" target="_blank" rel="noopener">
+          <svg data-lucide="external-link"></svg> Hirdetés
+        </a>
       </div>
 
       <div class="card-body">
         <div class="card-header-row">
           <h2 class="car-name"></h2>
           <div class="card-order-btns">
-            <button class="btn-order btn-up" title="Feljebb">↑</button>
-            <button class="btn-order btn-down" title="Lejjebb">↓</button>
-            <button class="btn-delete" title="Törlés">🗑️</button>
+            <button class="btn-order btn-up" title="Feljebb">
+              <svg data-lucide="chevron-up"></svg>
+            </button>
+            <button class="btn-order btn-down" title="Lejjebb">
+              <svg data-lucide="chevron-down"></svg>
+            </button>
+            <button class="btn-delete" title="Törlés">
+              <svg data-lucide="trash-2"></svg>
+            </button>
           </div>
         </div>
 
@@ -116,31 +146,41 @@
         </div>
 
         <div class="top5-section">
-          <h3 class="section-title">✨ Top 5 kiemelés</h3>
+          <h3 class="section-title">
+            <svg data-lucide="sparkles" class="section-icon"></svg> Top 5 kiemelés
+          </h3>
           <div class="top5-badges"></div>
         </div>
 
         <div class="equipment-section">
-          <h3 class="section-title">🔧 Felszereltség</h3>
+          <h3 class="section-title">
+            <svg data-lucide="wrench" class="section-icon"></svg> Felszereltség
+          </h3>
           <div class="equipment-preview"></div>
-          <button class="btn-toggle-equip">Összes felszereltség mutatása</button>
+          <button class="btn-toggle-equip">Összes mutatása</button>
           <ul class="equipment-full" style="display:none"></ul>
         </div>
 
         <div class="description-section">
-          <h3 class="section-title">📝 Leírás</h3>
+          <h3 class="section-title">
+            <svg data-lucide="file-text" class="section-icon"></svg> Leírás
+          </h3>
           <p class="car-description"></p>
         </div>
 
         <div class="comments-section">
-          <h3 class="section-title">💬 Megjegyzések</h3>
+          <h3 class="section-title">
+            <svg data-lucide="message-circle" class="section-icon"></svg> Megjegyzések
+          </h3>
           <ul class="comments-list"></ul>
           <form class="comment-form">
             <div class="comment-inputs">
               <input type="text" class="comment-input-author" placeholder="Neved" maxlength="50" required />
               <input type="text" class="comment-input-text" placeholder="Megjegyzés..." maxlength="500" required />
             </div>
-            <button type="submit" class="btn btn-sm btn-primary">Hozzáadás</button>
+            <button type="submit" class="btn btn-sm btn-primary">
+              <svg data-lucide="send" class="btn-icon"></svg> Hozzáadás
+            </button>
           </form>
         </div>
       </div>
@@ -150,16 +190,22 @@
   <!-- Custom confirm modal -->
   <div class="modal-overlay" id="confirmModal">
     <div class="modal-box">
-      <div class="modal-icon">🗑️</div>
+      <div class="modal-icon-wrap">
+        <svg data-lucide="trash-2" class="modal-trash-icon"></svg>
+      </div>
       <div class="modal-title">Törlés megerősítése</div>
       <div class="modal-message" id="confirmModalMsg"></div>
       <div class="modal-actions">
         <button class="btn-modal-cancel" id="confirmModalCancel">Mégsem</button>
-        <button class="btn-modal-confirm" id="confirmModalOk">Törlés</button>
+        <button class="btn-modal-confirm" id="confirmModalOk">
+          <svg data-lucide="trash-2" style="width:14px;height:14px;margin-right:5px;vertical-align:middle"></svg>
+          Törlés
+        </button>
       </div>
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.344.0/dist/umd/lucide.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <script src="assets/app.js"></script>
 </body>

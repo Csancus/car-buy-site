@@ -2,11 +2,13 @@
 const { loadCars } = require('../_lib');
 
 module.exports = async function handler(req, res) {
-  if (req.method !== 'GET') return res.status(405).end();
+  res.setHeader('Content-Type', 'application/json');
+  if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
   try {
     const cars = await loadCars();
-    res.json(cars);
+    return res.status(200).json(cars);
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    console.error('[GET /api/cars]', e);
+    return res.status(500).json({ error: e.message });
   }
 };

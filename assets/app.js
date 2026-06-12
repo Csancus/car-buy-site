@@ -39,6 +39,21 @@ function generateId() {
 }
 
 // ============================================================
+// Theme
+// ============================================================
+function initTheme() {
+  const saved = localStorage.getItem('carbuy_theme') || 'light';
+  document.documentElement.setAttribute('data-theme', saved);
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme') || 'light';
+  const next = current === 'light' ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('carbuy_theme', next);
+}
+
+// ============================================================
 // Custom confirm modal
 // ============================================================
 function showConfirm(message) {
@@ -100,7 +115,9 @@ async function apiAddCar(url) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ url }),
   });
-  const data = await resp.json();
+  const text = await resp.text();
+  let data;
+  try { data = JSON.parse(text); } catch { throw new Error(`A szerver HTML hibaoldalt adott vissza (${resp.status}). Ellenőrizd a Vercel function logokat.`); }
   if (!resp.ok) throw new Error(data.error || `HTTP ${resp.status}`);
   return data;
 }
@@ -128,7 +145,8 @@ async function apiSaveOrder(ids) {
 
 async function apiLoadCars() {
   const resp = await fetch('/api/cars');
-  return resp.json();
+  const text = await resp.text();
+  try { return JSON.parse(text); } catch { return []; }
 }
 
 // ============================================================
@@ -387,6 +405,7 @@ function renderAll() {
     fragment.appendChild(cardEl);
   }
   grid.appendChild(fragment);
+  if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 function buildCard(car) {
@@ -961,6 +980,12 @@ async function init() {
     }
   });
 
+  // Theme toggle
+  document.getElementById('btnTheme').addEventListener('click', toggleTheme);
+
+  // Lucide icons
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+
   // SortableJS
   initSortable();
 }
@@ -968,6 +993,7 @@ async function init() {
 // ============================================================
 // Boot
 // ============================================================
+initTheme();
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', init);
 } else {

@@ -1,9 +1,10 @@
 'use strict';
-const { loadCars, saveCars, fetchUrl, parseCarPage, extractIdFromUrl } = require('../_lib');
+const { loadCars, saveCars, fetchUrl, parseCarPage } = require('../_lib');
 
 module.exports = async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).end();
-  const { url: targetUrl } = req.body;
+  res.setHeader('Content-Type', 'application/json');
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  const { url: targetUrl } = req.body || {};
   if (!targetUrl || !targetUrl.includes('hasznaltauto.hu')) {
     return res.status(400).json({ error: 'Érvénytelen URL. Csak hasznaltauto.hu URL-t fogad el.' });
   }
@@ -18,8 +19,9 @@ module.exports = async function handler(req, res) {
     car.order = cars.length;
     cars.push(car);
     await saveCars(cars);
-    res.json(car);
+    return res.status(200).json(car);
   } catch (e) {
-    res.status(500).json({ error: `Letöltési hiba: ${e.message}` });
+    console.error('[POST /api/cars/add]', e);
+    return res.status(500).json({ error: `Letöltési hiba: ${e.message}` });
   }
 };
