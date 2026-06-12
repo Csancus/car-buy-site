@@ -4,7 +4,10 @@ const https = require('https');
 const http = require('http');
 const zlib = require('zlib');
 
-const redis = Redis.fromEnv();
+const redis = new Redis({
+  url: process.env.KV_REST_API_URL,
+  token: process.env.KV_REST_API_TOKEN,
+});
 const CARS_KEY = 'carbuy_cars';
 
 // ── Redis storage ─────────────────────────────────────────────────

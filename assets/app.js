@@ -39,6 +39,36 @@ function generateId() {
 }
 
 // ============================================================
+// Custom confirm modal
+// ============================================================
+function showConfirm(message) {
+  return new Promise((resolve) => {
+    const overlay = document.getElementById('confirmModal');
+    const msgEl = document.getElementById('confirmModalMsg');
+    const okBtn = document.getElementById('confirmModalOk');
+    const cancelBtn = document.getElementById('confirmModalCancel');
+
+    msgEl.textContent = message;
+    overlay.classList.add('visible');
+
+    function cleanup(result) {
+      overlay.classList.remove('visible');
+      okBtn.removeEventListener('click', onOk);
+      cancelBtn.removeEventListener('click', onCancel);
+      overlay.removeEventListener('click', onOverlay);
+      resolve(result);
+    }
+    function onOk() { cleanup(true); }
+    function onCancel() { cleanup(false); }
+    function onOverlay(e) { if (e.target === overlay) cleanup(false); }
+
+    okBtn.addEventListener('click', onOk);
+    cancelBtn.addEventListener('click', onCancel);
+    overlay.addEventListener('click', onOverlay);
+  });
+}
+
+// ============================================================
 // LocalStorage
 // ============================================================
 function loadFromStorage() {
@@ -574,7 +604,7 @@ function attachCardEvents(card, car) {
 
   // Delete
   card.querySelector('.btn-delete').addEventListener('click', async () => {
-    if (confirm(`Biztosan törlöd ezt a hirdetést?\n${car.name}`)) {
+    if (await showConfirm(`Biztosan törlöd ezt a hirdetést?\n${car.name}`)) {
       await apiDeleteCar(carId);
       cars = cars.filter(c => c.id !== carId);
       cars.forEach((c, i) => { c.order = i; });

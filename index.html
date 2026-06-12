@@ -147,6 +147,19 @@
     </article>
   </template>
 
+  <!-- Custom confirm modal -->
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal-box">
+      <div class="modal-icon">🗑️</div>
+      <div class="modal-title">Törlés megerősítése</div>
+      <div class="modal-message" id="confirmModalMsg"></div>
+      <div class="modal-actions">
+        <button class="btn-modal-cancel" id="confirmModalCancel">Mégsem</button>
+        <button class="btn-modal-confirm" id="confirmModalOk">Törlés</button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <script src="assets/app.js"></script>
 </body>
