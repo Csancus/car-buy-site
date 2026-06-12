@@ -1,24 +1,20 @@
 'use strict';
-const { Redis } = require('@upstash/redis');
+const { kv } = require('@vercel/kv');
 const https = require('https');
 const http = require('http');
 const zlib = require('zlib');
 
-const redis = new Redis({
-  url: process.env.KV_REST_API_URL,
-  token: process.env.KV_REST_API_TOKEN,
-});
 const CARS_KEY = 'carbuy_cars';
 
-// ── Redis storage ─────────────────────────────────────────────────
+// ── KV storage ────────────────────────────────────────────────────
 async function loadCars() {
-  const data = await redis.get(CARS_KEY);
+  const data = await kv.get(CARS_KEY);
   if (!data) return [];
   return Array.isArray(data) ? data : [];
 }
 
 async function saveCars(cars) {
-  await redis.set(CARS_KEY, cars);
+  await kv.set(CARS_KEY, cars);
 }
 
 // ── HTTP fetch ────────────────────────────────────────────────────
