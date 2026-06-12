@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Autó Összehasonlító</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="header-brand">
+        <span class="header-icon">🚗</span>
+        <div>
+          <h1 class="header-title">Autó Összehasonlító</h1>
+          <p class="header-subtitle">Használtautó.hu hirdetések összehasonlítása</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="btnCompare" class="btn btn-outline-light" title="Összehasonlító táblázat">
+          <span class="btn-icon">⚖️</span> Összehasonlítás
+        </button>
+        <button id="btnExport" class="btn btn-outline-light" title="Adatok exportálása">
+          <span class="btn-icon">💾</span> Export
+        </button>
+        <label class="btn btn-outline-light" title="Adatok importálása">
+          <span class="btn-icon">📂</span> Import
+          <input type="file" id="fileImport" accept=".json" style="display:none" />
+        </label>
+      </div>
+    </div>
+  </header>
+
+  <!-- Add car form -->
+  <div class="add-car-section">
+    <div class="add-car-inner">
+      <div class="add-car-form">
+        <div class="input-group">
+          <input
+            type="url"
+            id="urlInput"
+            class="url-input"
+            placeholder="Illeszd be a hasznaltauto.hu hirdetés URL-jét..."
+            autocomplete="off"
+          />
+          <button id="btnAdd" class="btn btn-primary">
+            <span id="btnAddText">+ Autó hozzáadása</span>
+            <span id="btnAddSpinner" class="spinner" style="display:none"></span>
+          </button>
+        </div>
+        <div id="addError" class="error-msg" style="display:none"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comparison table (hidden by default) -->
+  <div id="compareSection" class="compare-section" style="display:none">
+    <div class="compare-inner">
+      <div class="compare-header">
+        <h2 class="compare-title">⚖️ Összehasonlító táblázat</h2>
+        <button id="btnCloseCompare" class="btn btn-ghost">✕ Bezárás</button>
+      </div>
+      <div class="compare-scroll">
+        <table id="compareTable" class="compare-table">
+          <thead id="compareHead"></thead>
+          <tbody id="compareBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  <div id="emptyState" class="empty-state">
+    <div class="empty-icon">🚘</div>
+    <h2 class="empty-title">Még nincsenek mentett hirdetések</h2>
+    <p class="empty-desc">Illeszd be egy használtautó.hu hirdetés URL-jét fent, és az alkalmazás automatikusan beolvassa az adatokat.</p>
+  </div>
+
+  <!-- Cars grid -->
+  <main class="cars-grid" id="carsGrid"></main>
+
+  <!-- Card template (hidden, cloned via JS) -->
+  <template id="cardTemplate">
+    <article class="car-card" data-id="">
+      <div class="card-slideshow">
+        <div class="slideshow-images">
+          <img class="slideshow-img" src="" alt="" loading="lazy" />
+        </div>
+        <button class="slide-btn slide-prev">‹</button>
+        <button class="slide-btn slide-next">›</button>
+        <span class="slide-counter">1/1</span>
+        <a class="card-link-badge" href="#" target="_blank" rel="noopener">🔗 Hirdetés</a>
+      </div>
+
+      <div class="card-body">
+        <div class="card-header-row">
+          <h2 class="car-name"></h2>
+          <div class="card-order-btns">
+            <button class="btn-order btn-up" title="Feljebb">↑</button>
+            <button class="btn-order btn-down" title="Lejjebb">↓</button>
+            <button class="btn-delete" title="Törlés">🗑️</button>
+          </div>
+        </div>
+
+        <div class="car-price"></div>
+
+        <div class="car-specs">
+          <span class="spec-badge spec-year"></span>
+          <span class="spec-badge spec-mileage"></span>
+          <span class="spec-badge spec-fuel"></span>
+          <span class="spec-badge spec-transmission"></span>
+        </div>
+
+        <div class="top5-section">
+          <h3 class="section-title">✨ Top 5 kiemelés</h3>
+          <div class="top5-badges"></div>
+        </div>
+
+        <div class="equipment-section">
+          <h3 class="section-title">🔧 Felszereltség</h3>
+          <div class="equipment-preview"></div>
+          <button class="btn-toggle-equip">Összes felszereltség mutatása</button>
+          <ul class="equipment-full" style="display:none"></ul>
+        </div>
+
+        <div class="description-section">
+          <h3 class="section-title">📝 Leírás</h3>
+          <p class="car-description"></p>
+        </div>
+
+        <div class="comments-section">
+          <h3 class="section-title">💬 Megjegyzések</h3>
+          <ul class="comments-list"></ul>
+          <form class="comment-form">
+            <div class="comment-inputs">
+              <input type="text" class="comment-input-author" placeholder="Neved" maxlength="50" required />
+              <input type="text" class="comment-input-text" placeholder="Megjegyzés..." maxlength="500" required />
+            </div>
+            <button type="submit" class="btn btn-sm btn-primary">Hozzáadás</button>
+          </form>
+        </div>
+      </div>
+    </article>
+  </template>
+
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>
