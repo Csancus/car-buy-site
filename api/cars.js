@@ -59,10 +59,12 @@ module.exports = async (req, res) => {
       const cars = await loadCars();
       const car = cars.find(c => String(c.id) === String(id));
       if (!car) return res.status(404).json({ error: 'Hirdetés nem található' });
-      const { sellerLabel, carConditionLabel, rankings } = req.body || {};
+      const { sellerLabel, carConditionLabel, rankings, extraEquipment, missingEquipment } = req.body || {};
       if (sellerLabel !== undefined) car.sellerLabel = sellerLabel;
       if (carConditionLabel !== undefined) car.carConditionLabel = carConditionLabel;
       if (rankings !== undefined) car.rankings = rankings;
+      if (extraEquipment !== undefined) car.extraEquipment = extraEquipment;
+      if (missingEquipment !== undefined) car.missingEquipment = missingEquipment;
       await saveCars(cars);
       return res.status(200).json({ ok: true });
     }

@@ -10,12 +10,103 @@
 // ============================================================
 const STORAGE_KEY = 'carbuy_cars';
 
+/* eslint-disable */
+const CAR_FEATURES = [
+  'ABS (blokkolásgátló fék)','ESP (menetstabilizátor)','ASR (csúszásgátló)','EBD (elektronikus fékerőelosztó)',
+  'Automatikus vészfékezés (AEB)','Gyalogos felismerő vészfékező','Kerékpáros felismerő vészfékező',
+  'Sávtartó asszisztens','Sávváltás asszisztens','Sáv centráló asszisztens',
+  'Holttér figyelő','Keresztforgalom figyelő (tolatáskor)','Keresztforgalom figyelő (előre haladáskor)',
+  'Ütközésmegelőző rendszer','Fáradtságfigyelő rendszer','Figyelemfigyelő rendszer',
+  'Éjjellátó rendszer (Night Vision)','Közlekedési tábla felismerő','Riasztó','Immobilizer',
+  'GPS nyomkövető','Gumiabroncs-nyomásmérő (TPMS)',
+  'Légzsák (vezető)','Légzsák (utas)','Oldallégzsákok (első)','Oldallégzsákok (hátsó)',
+  'Fejlégzsák / Függönylégzsák','Térdelérlégzsák',
+  'Hill Holder (lejtős indítás asszisztens)','Meredek leereszkedés asszisztens (HDC)',
+  'ISOFIX gyermekülés rögzítő','Gyermekvédő zár (hátsó ajtók)','Mentőhívás (eCall)',
+  'Tempomat','Adaptív tempomat (ACC)','Adaptív tempomat Stop & Go',
+  'Prediktív tempomat (GPS alapú)','Sebességhatároló',
+  'Parkolószenzor (hátsó)','Parkolószenzor (első)','Aktív parkoló asszisztens',
+  'Remote parkoló asszisztens','Tolatókamera','Frontkamera','360° kamera rendszer',
+  'Fűtött első ülések','Fűtött hátsó ülések','Fűtött középső hátsó ülés',
+  'Szellőztetett ülések','Masszázsülések (első)','Masszázsülések (hátsó)','Hűtött ülések',
+  'Elektromos vezető ülés','Elektromos utas ülés','Memória-ülés (vezető)','Memória-ülés (utas)',
+  'Állítható ágyéktámasz','Sportülések','Ülőlap hosszúságának állítása',
+  'Bőr ülések','Valódi bőr ülések','Nappa bőr ülések','Alcantara ülések','Szintetikus bőr ülések',
+  '3-as osztott hátsó ülés (60/40)','Teljesen lenyomható hátsó ülések','7 személyes (3 sor ülés)',
+  'Fűtött kormánykerék','Perforált bőrkormány','Multimédia gombok a kormányon',
+  'Elektromos állítható kormányoszlop','Memória-kormány',
+  'Halogén fényszórók','Xenon fényszórók (HID)','LED fényszórók','Full LED fényszórók',
+  'Matrix LED fényszórók','Lézer fényszórók','Adaptív fényszórók (kanyarkövető)',
+  'Nappali menetfények (DRL)','Automatikus fénykapcsoló','Automata távolsági fény (HBA)',
+  'Ködlámpa (első)','Ködlámpa (hátsó)','LED hátsó lámpa','OLED hátsó lámpa',
+  'Dinamikus irányjelző (folyó)','Sarokvilágítás',
+  'Napfénytető','Elektromos napfénytető','Panorámatető','Nyitható panorámatető','Üvegtető (fix)',
+  'Beépített GPS navigáció','Apple CarPlay (kábeles)','Apple CarPlay (vezeték nélküli)',
+  'Android Auto (kábeles)','Android Auto (vezeték nélküli)',
+  'Bluetooth','DAB+ digitális rádió','AM/FM rádió','CD lejátszó',
+  'Érintőképernyős multimédia','Head-up kijelző (HUD)','Digitális műszerfal',
+  'Prémium hangrendszer','Bose hangrendszer','Harman Kardon hangrendszer',
+  'Bang & Olufsen hangrendszer','Meridian hangrendszer','Burmester hangrendszer',
+  'Dynaudio hangrendszer','Subwoofer','Hátsó szórakoztató rendszer',
+  'Okos hangvezérlő rendszer','Hátsó fejfejtámasz monitor',
+  'USB-A csatlakozó (első)','USB-A csatlakozó (hátsó)','USB-C csatlakozó (első)','USB-C csatlakozó (hátsó)',
+  'AUX csatlakozó','WiFi hotspot (beépített)','12V csatlakozó','230V konnektor','Vezeték nélküli töltő',
+  'Manuális légkondicionáló','Automata klímaberendezés','Kétzónás klímaberendezés',
+  'Háromzónás klímaberendezés','Négyzónás klímaberendezés','Pollenszűrő','Aktív szénszűrő',
+  'Hőpumpa','Fűtött első szélvédő','Fűtött hátsó szélvédő','Fűtött visszapillantó tükrök',
+  'Távirányítható klíma (app)','Távirányítható előfűtés (app)','Automata esőérzékelős törlő',
+  'Elektromos ablakemelők (első)','Elektromos ablakemelők (hátsó)',
+  'Sötétített hátsó ablakok','Napvédő roló (hátsó)','Napvédő roló (oldal)',
+  'Akusztikus szélvédő','Akusztikus oldalsó ablakok',
+  'Elektromos csomagtérajtó','Lábbal nyitható csomagtér',
+  'Kulcs nélküli indítás (Start/Stop gomb)','Kulcs nélküli nyitás (Keyless Entry)',
+  'Digitális kulcs (telefon alapú)','Soft-close ajtók',
+  'Elektromos visszapillantó tükrök','Összecsukható visszapillantó tükrök',
+  'Automata tompítású visszapillantó tükör','Kamerás visszapillantó (tükörpótló)',
+  'Automatikus bekormányzó tükrök (tolatáskor)','Memória-tükrök',
+  'Összkerékhajtás állandó (AWD)','Összkerékhajtás kapcsolható (4WD)',
+  'Sport mód','Comfort mód','Eco mód','Egyéni menetmód','Offroad mód','Snow mód','Sand mód',
+  'Launch Control','Aktív kipufogó rendszer','Sportkipufogó',
+  'Légfelfüggesztés','Adaptív lengéscsillapítók','Hátsókerék-kormányzás',
+  'Torque vectoring','Aktív differenciálmű',
+  'Elektromos parkolófék','Auto Hold funkció','Kerámia fékek',
+  'Automata váltó','Kéziváltó','DCT (kettős kuplungos váltó)','CVT (fokozat nélküli) váltó',
+  'Szekvenciális váltó','Lapátos váltókar (kormányon)',
+  'Vonóhorog (rögzített)','Vonóhorog (lecsukható)','Vonóhorog (elektromos, lecsukható)',
+  'Tetőcsomagtartó (sínes)','Kerékpártartó (vonóhorogra)','Sítartó (tetőre)',
+  'Elektromos csomagtér-takaró','Kettős csomagtér padló','Trailer asszisztens (pótkocsi)',
+  'Defektálló gumiabroncs (RunFlat)','Pótkerék (teljes méretű)','Pótkerék (mini)',
+  'Defektjavító készlet (spray)','Téli gumiabroncs (készlet)',
+  '16 colos alufelnik','17 colos alufelnik','18 colos alufelnik',
+  '19 colos alufelnik','20 colos alufelnik','21 colos alufelnik','22 colos alufelnik',
+  'Ambiens megvilágítás','Ambiens megvilágítás (többszínű, RGB)',
+  'Fa intarzia','Karbon intarzia','Alumínium betétek','Velúr belső burkolat',
+  'Fűtött pohártartó','Hűtött kesztyűtartó','Légfrissítő / Parfümadagoló',
+  'Automata tompítású belső visszapillantó tükör',
+  'Gyorstöltő port (DC, CCS)','Gyorstöltő port (DC, CHAdeMO)',
+  'AC töltő port (Type 2)','Fedélzeti töltő 7,4 kW','Fedélzeti töltő 11 kW','Fedélzeti töltő 22 kW',
+  'V2L (jármű-hálózat töltés)','V2G (hálózatba visszatáplálás)',
+  'Regeneratív fékezés (állítható)','Egypedálos vezetés',
+  'Akkumulátor melegítő','OTA frissítés (Over-the-Air)','Előkondicionálás (app-ból)',
+  'Gyártói garancia (aktív)','Kiterjesztett garancia','Szervizkönyv (teljes)',
+  'Magyar forgalmú','Első tulajdonostól','Füstmentes','Kisállat-mentes',
+  'Balesetmentes','Márkaszervizes karbantartás','Szervizcsomag (előre fizetett)',
+  'Szélvédő-vízlepergető bevonat','Szélvédő gyorspáramentesítő',
+  'OBD diagnosztikai csatlakozó','Hill Descent Control',
+  'Prediktív energia visszanyerés','Valós idejű forgalmi info (navigáció)',
+  'Automata szintező fényszóró','Elektromos rácsbetét (Grille Shutter)',
+  'Track mód (zárt pályára)',
+];
+/* eslint-enable */
+
 // ============================================================
 // State
 // ============================================================
 let cars = [];
 let autoRanks = {};
 let activePersonFilter = null;
+let lightboxImages = [];
+let lightboxIdx = 0;
 
 // ============================================================
 // Utils
@@ -301,6 +392,95 @@ function extractIdFromUrl(url) {
   // hasznaltauto.hu URLs end with -NUMBERS
   const m = url.match(/-(\d+)(?:\?.*)?$/);
   return m ? parseInt(m[1], 10) : null;
+}
+
+// ============================================================
+// Lightbox
+// ============================================================
+function openLightbox(images, idx) {
+  if (!images || !images.length) return;
+  lightboxImages = images;
+  lightboxIdx = Math.max(0, Math.min(idx, images.length - 1));
+  updateLightboxImg();
+  document.getElementById('lightbox').classList.add('visible');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('visible');
+  document.body.style.overflow = '';
+}
+
+function updateLightboxImg() {
+  document.getElementById('lightboxImg').src = lightboxImages[lightboxIdx];
+  document.getElementById('lightboxCounter').textContent = `${lightboxIdx + 1} / ${lightboxImages.length}`;
+  const multi = lightboxImages.length > 1;
+  document.getElementById('lightboxPrev').style.display = multi ? '' : 'none';
+  document.getElementById('lightboxNext').style.display = multi ? '' : 'none';
+}
+
+// ============================================================
+// Autocomplete
+// ============================================================
+function attachAutocomplete(inputEl, onSelect) {
+  const wrap = inputEl.closest('.autocomplete-wrap');
+  if (!wrap) return;
+  let dropdown = wrap.querySelector('.autocomplete-dropdown');
+  if (!dropdown) {
+    dropdown = document.createElement('div');
+    dropdown.className = 'autocomplete-dropdown';
+    wrap.appendChild(dropdown);
+  }
+  let activeIdx = -1;
+
+  function showSuggestions() {
+    const q = inputEl.value.trim().toLowerCase();
+    dropdown.innerHTML = '';
+    activeIdx = -1;
+    if (q.length < 1) { dropdown.style.display = 'none'; return; }
+    const matches = CAR_FEATURES.filter(f => f.toLowerCase().includes(q)).slice(0, 9);
+    if (!matches.length) { dropdown.style.display = 'none'; return; }
+    for (const match of matches) {
+      const item = document.createElement('div');
+      item.className = 'ac-item';
+      const lo = match.toLowerCase();
+      const start = lo.indexOf(q);
+      item.innerHTML = escHtml(match.slice(0, start)) +
+        `<strong>${escHtml(match.slice(start, start + q.length))}</strong>` +
+        escHtml(match.slice(start + q.length));
+      item.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        inputEl.value = '';
+        dropdown.style.display = 'none';
+        onSelect(match);
+      });
+      dropdown.appendChild(item);
+    }
+    dropdown.style.display = 'block';
+  }
+
+  inputEl.addEventListener('input', showSuggestions);
+  inputEl.addEventListener('focus', showSuggestions);
+  inputEl.addEventListener('blur', () => setTimeout(() => { dropdown.style.display = 'none'; }, 160));
+
+  inputEl.addEventListener('keydown', (e) => {
+    const items = [...dropdown.querySelectorAll('.ac-item')];
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      activeIdx = Math.min(activeIdx + 1, items.length - 1);
+      items.forEach((el, i) => el.classList.toggle('ac-active', i === activeIdx));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      activeIdx = Math.max(activeIdx - 1, 0);
+      items.forEach((el, i) => el.classList.toggle('ac-active', i === activeIdx));
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      const val = activeIdx >= 0 ? items[activeIdx].textContent : inputEl.value.trim();
+      if (val) { onSelect(val); inputEl.value = ''; dropdown.style.display = 'none'; }
+    } else if (e.key === 'Escape') {
+      dropdown.style.display = 'none';
+    }
+  });
 }
 
 // ============================================================
@@ -622,11 +802,39 @@ function populateCard(card, car) {
     phoneEl.style.color = phone ? '' : 'var(--text-dim)';
   }
 
+  // Extra & missing equipment
+  renderExtraEquipment(card, car);
+  renderMissingEquipment(card, car);
+
   // Personal rankings
   renderRankings(card, car);
 
   // Comments
   renderComments(card, car);
+}
+
+function renderExtraEquipment(card, car) {
+  const list = card.querySelector('.extra-equip-list');
+  if (!list) return;
+  list.innerHTML = '';
+  for (const item of (car.extraEquipment || [])) {
+    const tag = document.createElement('span');
+    tag.className = 'extra-equip-tag';
+    tag.innerHTML = `${escHtml(item)}<button class="btn-tag-delete" data-item="${escHtml(item)}" title="Törlés">×</button>`;
+    list.appendChild(tag);
+  }
+}
+
+function renderMissingEquipment(card, car) {
+  const list = card.querySelector('.missing-equip-list');
+  if (!list) return;
+  list.innerHTML = '';
+  for (const item of (car.missingEquipment || [])) {
+    const tag = document.createElement('span');
+    tag.className = 'missing-equip-tag';
+    tag.innerHTML = `⚠ ${escHtml(item)}<button class="btn-tag-delete" data-item="${escHtml(item)}" title="Törlés">×</button>`;
+    list.appendChild(tag);
+  }
 }
 
 function renderRankings(card, car) {
@@ -673,6 +881,88 @@ function escHtml(str) {
 function attachCardEvents(card, car) {
   const carId = car.id;
 
+
+  // Summary image → lightbox
+  card.querySelector('.summary-img').addEventListener('click', () => {
+    const c = getCarById(carId);
+    if (c && c.images && c.images.length) openLightbox(c.images, 0);
+  });
+
+  // Slideshow image → lightbox at current slide
+  card.querySelector('.slideshow-img').addEventListener('click', () => {
+    const c = getCarById(carId);
+    if (c && c.images && c.images.length) openLightbox(c.images, parseInt(card.dataset.imgIdx || '0', 10));
+  });
+
+  // Extra equipment
+  const extraInput = card.querySelector('.extra-feature-input');
+  const extraList = card.querySelector('.extra-equip-list');
+  if (extraInput) {
+    attachAutocomplete(extraInput, (val) => {
+      const c = getCarById(carId);
+      if (!c || (c.extraEquipment || []).includes(val)) return;
+      c.extraEquipment = [...(c.extraEquipment || []), val];
+      saveToStorage();
+      renderExtraEquipment(card, c);
+      apiUpdateCar(carId, { extraEquipment: c.extraEquipment });
+    });
+    card.querySelector('.btn-add-extra').addEventListener('click', () => {
+      const val = extraInput.value.trim();
+      if (!val) return;
+      const c = getCarById(carId);
+      if (!c || (c.extraEquipment || []).includes(val)) { extraInput.value = ''; return; }
+      c.extraEquipment = [...(c.extraEquipment || []), val];
+      saveToStorage();
+      renderExtraEquipment(card, c);
+      apiUpdateCar(carId, { extraEquipment: c.extraEquipment });
+      extraInput.value = '';
+    });
+    extraList.addEventListener('click', (e) => {
+      const btn = e.target.closest('.btn-tag-delete');
+      if (!btn) return;
+      const c = getCarById(carId);
+      if (!c) return;
+      c.extraEquipment = (c.extraEquipment || []).filter(x => x !== btn.dataset.item);
+      saveToStorage();
+      renderExtraEquipment(card, c);
+      apiUpdateCar(carId, { extraEquipment: c.extraEquipment });
+    });
+  }
+
+  // Missing equipment
+  const missingInput = card.querySelector('.missing-feature-input');
+  const missingList = card.querySelector('.missing-equip-list');
+  if (missingInput) {
+    attachAutocomplete(missingInput, (val) => {
+      const c = getCarById(carId);
+      if (!c || (c.missingEquipment || []).includes(val)) return;
+      c.missingEquipment = [...(c.missingEquipment || []), val];
+      saveToStorage();
+      renderMissingEquipment(card, c);
+      apiUpdateCar(carId, { missingEquipment: c.missingEquipment });
+    });
+    card.querySelector('.btn-add-missing').addEventListener('click', () => {
+      const val = missingInput.value.trim();
+      if (!val) return;
+      const c = getCarById(carId);
+      if (!c || (c.missingEquipment || []).includes(val)) { missingInput.value = ''; return; }
+      c.missingEquipment = [...(c.missingEquipment || []), val];
+      saveToStorage();
+      renderMissingEquipment(card, c);
+      apiUpdateCar(carId, { missingEquipment: c.missingEquipment });
+      missingInput.value = '';
+    });
+    missingList.addEventListener('click', (e) => {
+      const btn = e.target.closest('.btn-tag-delete');
+      if (!btn) return;
+      const c = getCarById(carId);
+      if (!c) return;
+      c.missingEquipment = (c.missingEquipment || []).filter(x => x !== btn.dataset.item);
+      saveToStorage();
+      renderMissingEquipment(card, c);
+      apiUpdateCar(carId, { missingEquipment: c.missingEquipment });
+    });
+  }
 
   // Seller label toggle
   card.querySelectorAll('.btn-seller-lbl').forEach(btn => {
@@ -1255,6 +1545,30 @@ async function init() {
 
   // Theme toggle
   document.getElementById('btnTheme').addEventListener('click', toggleTheme);
+
+  // Lightbox controls
+  document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+  document.getElementById('lightboxPrev').addEventListener('click', () => {
+    lightboxIdx = (lightboxIdx - 1 + lightboxImages.length) % lightboxImages.length;
+    updateLightboxImg();
+  });
+  document.getElementById('lightboxNext').addEventListener('click', () => {
+    lightboxIdx = (lightboxIdx + 1) % lightboxImages.length;
+    updateLightboxImg();
+  });
+  document.getElementById('lightboxImg').addEventListener('click', () => {
+    lightboxIdx = (lightboxIdx + 1) % lightboxImages.length;
+    updateLightboxImg();
+  });
+  document.getElementById('lightbox').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('lightbox')) closeLightbox();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (!document.getElementById('lightbox').classList.contains('visible')) return;
+    if (e.key === 'Escape') closeLightbox();
+    else if (e.key === 'ArrowLeft') { lightboxIdx = (lightboxIdx - 1 + lightboxImages.length) % lightboxImages.length; updateLightboxImg(); }
+    else if (e.key === 'ArrowRight') { lightboxIdx = (lightboxIdx + 1) % lightboxImages.length; updateLightboxImg(); }
+  });
 
   // Rank info modal
   const rankInfoModal = document.getElementById('rankInfoModal');
