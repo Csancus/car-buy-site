@@ -766,6 +766,7 @@ function populateCard(card, car) {
   setSum('.sum-km', car.mileage != null ? `🛣 ${formatMileage(car.mileage)}` : '');
   setSum('.sum-fuel', car.fuel ? `⛽ ${car.fuel}` : '');
   setSum('.sum-trans', car.transmission ? `⚙️ ${car.transmission}` : '');
+  setSum('.sum-trunk', car.trunkVolume ? `🧳 ${car.trunkVolume}` : '');
   setSum('.sum-condition', car.condition || '');
 
   // Warranty badge
