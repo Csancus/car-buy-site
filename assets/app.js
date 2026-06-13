@@ -1236,13 +1236,15 @@ async function init() {
   });
 
   // Export
-  document.getElementById('btnExport').addEventListener('click', exportCars);
+  const btnExport = document.getElementById('btnExport');
+  if (btnExport) btnExport.addEventListener('click', exportCars);
 
   // Import
-  document.getElementById('fileImport').addEventListener('change', (e) => {
+  const fileImport = document.getElementById('fileImport');
+  if (fileImport) fileImport.addEventListener('change', (e) => {
     if (e.target.files && e.target.files[0]) {
       importCars(e.target.files[0]);
-      e.target.value = ''; // reset so same file can be re-imported
+      e.target.value = '';
     }
   });
 
