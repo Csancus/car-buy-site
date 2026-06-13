@@ -1108,8 +1108,9 @@ body {
 .ranking-input-pos::placeholder { color: var(--text-dim); }
 
 /* ── Rank info modal list ───────────────────────────────── */
-.rank-info-list { list-style: none; margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
-.rank-info-list li { display: flex; align-items: center; gap: 8px; font-size: 0.825rem; color: var(--text-muted); }
+.rank-info-list { list-style: none; margin-top: 10px; display: flex; flex-direction: column; gap: 6px; text-align: left; }
+.rank-info-list li { display: flex; align-items: flex-start; gap: 8px; font-size: 0.825rem; color: var(--text-muted); }
+.rank-info-list li .rank-info-pts { margin-top: 1px; }
 .rank-info-pts {
   font-size: 0.72rem;
   font-weight: 700;
@@ -1352,25 +1353,7 @@ body {
 .sum-slide-next { right: 4px; }
 .summary-thumb-wrap:not(.has-multiple) .sum-slide-btn { display: none; }
 
-/* ── Rank weight editor ──────────────────────────────────── */
-.rank-info-list { list-style: none; padding: 0; margin: 10px 0 4px; display: flex; flex-direction: column; gap: 6px; }
-.rank-info-list li { display: flex; flex-direction: column; gap: 4px; }
-.rank-info-row { display: flex; align-items: center; gap: 8px; width: 100%; }
-.rank-info-row > span { flex: 1; min-width: 0; }
-.rank-weight-input {
-  flex-shrink: 0;
-  width: 52px;
-  padding: 3px 6px;
-  border-radius: 20px;
-  border: 1px solid var(--border);
-  background: var(--bg-elevated);
-  color: var(--primary);
-  font-weight: 700;
-  font-size: .82rem;
-  text-align: center;
-  outline: none;
-}
-.rank-weight-input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-glow); }
+/* ── Rank info modal extras ──────────────────────────────── */
 .rank-expand-btn {
   background: none; border: none; cursor: pointer; color: var(--primary);
   font-size: .78rem; padding: 0 2px; text-decoration: underline dotted; white-space: nowrap;
@@ -1532,3 +1515,35 @@ body {
   padding: 6px 10px;
   line-height: 1.4;
 }
+
+/* ── Rank score info button ──────────────────────────────── */
+.rank-score-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: .78rem;
+  color: var(--text-dim);
+  padding: 0 1px;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: color .15s;
+}
+.rank-score-btn:hover { color: var(--primary); }
+
+.rank-score-tooltip {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 50;
+  background: var(--bg-card);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius);
+  padding: 10px 13px;
+  font-size: .78rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+  white-space: nowrap;
+  box-shadow: var(--shadow-hover);
+  pointer-events: none;
+}
+.rank-score-tooltip strong { color: var(--text); }

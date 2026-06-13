@@ -112,7 +112,7 @@ let activeQuickFilters  = new Set();
 let activeAttrFilters   = {};     // { fuel, transmission, condition, yearFrom, yearTo }
 let activeFeatureFilters = new Set();
 
-const SCORE_WEIGHTS = { price: 30, mileage: 25, year: 20, top5: 15, equipment: 10 };
+const SCORE_WEIGHTS = { price: 30, mileage: 25, year: 20, top5: 15, equipment: 10, location: 5 };
 
 const QUICK_FILTERS = [
   {
@@ -526,6 +526,8 @@ function computeAutoScore(car) {
   if (car.year) score += Math.max(0, Math.min(W.year, (car.year - 2010) / 16 * W.year));
   score += Math.min(W.top5, (car.top5 || []).length * (W.top5 / 5));
   score += Math.min(W.equipment, Math.floor((car.equipment || []).length / 5));
+  const loc = (car.sellerLocation || '').toLowerCase();
+  if (loc.includes('budapest') || loc.includes('pest')) score += W.location;
   return score;
 }
 
@@ -700,16 +702,36 @@ function populateCard(card, car) {
   const btnListing = card.querySelector('.btn-listing');
   if (btnListing) btnListing.href = car.url;
 
-  // Auto rank badge
+  // Auto rank badge + score info btn
   const rankBadge = card.querySelector('.auto-rank-badge');
+  const rankInfoBtn = card.querySelector('.rank-score-btn');
   if (rankBadge) {
     const rank = autoRanks[String(car.id)];
     if (rank && cars.length > 1) {
       rankBadge.textContent = `#${rank}`;
       rankBadge.style.display = 'inline';
       rankBadge.className = `auto-rank-badge rank-${rank <= 3 ? rank : 'other'}`;
+      if (rankInfoBtn) {
+        const W = SCORE_WEIGHTS;
+        const pPrice  = car.price    ? Math.max(0, W.price   * (1 - car.price / 15_000_000)).toFixed(1)  : '—';
+        const pKm     = car.mileage != null ? Math.max(0, W.mileage * (1 - car.mileage / 300_000)).toFixed(1) : '—';
+        const pYear   = car.year     ? Math.max(0, Math.min(W.year, (car.year - 2010) / 16 * W.year)).toFixed(1) : '—';
+        const pTop5   = Math.min(W.top5, (car.top5 || []).length * (W.top5 / 5)).toFixed(1);
+        const pEquip  = Math.min(W.equipment, Math.floor((car.equipment || []).length / 5)).toFixed(1);
+        const locLow  = (car.sellerLocation || '').toLowerCase();
+        const pLoc    = (locLow.includes('budapest') || locLow.includes('pest')) ? `+${W.location}` : '0';
+        const total   = computeAutoScore(car).toFixed(1);
+        rankInfoBtn.dataset.scoreHtml =
+          `Ár: ${pPrice} pt\nKm-óra: ${pKm} pt\nÉvjárat: ${pYear} pt\n` +
+          `Kiemelések (${(car.top5||[]).length}/5): ${pTop5} pt\n` +
+          `Felszereltség (${(car.equipment||[]).length} elem): ${pEquip} pt\n` +
+          `Budapest/Pest: ${pLoc} pt\n` +
+          `Összesen: ${total} pt`;
+        rankInfoBtn.style.display = 'inline';
+      }
     } else {
       rankBadge.style.display = 'none';
+      if (rankInfoBtn) rankInfoBtn.style.display = 'none';
     }
   }
 
@@ -1048,6 +1070,26 @@ function attachCardEvents(card, car) {
     setImgIdx((parseInt(card.dataset.imgIdx || '0', 10) + 1) % c.images.length);
   });
 
+  // Rank score info tooltip
+  const rankScoreBtn = card.querySelector('.rank-score-btn');
+  if (rankScoreBtn) {
+    rankScoreBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.querySelectorAll('.rank-score-tooltip').forEach(el => el.remove());
+      const text = rankScoreBtn.dataset.scoreHtml || '';
+      if (!text) return;
+      const tip = document.createElement('div');
+      tip.className = 'rank-score-tooltip';
+      tip.innerHTML = text.split('\n').map((line, i, arr) =>
+        i === arr.length - 1 ? `<strong>${line}</strong>` : escHtml(line)
+      ).join('<br>');
+      rankScoreBtn.closest('.car-name-area').style.position = 'relative';
+      rankScoreBtn.closest('.car-name-area').appendChild(tip);
+      const close = () => { tip.remove(); document.removeEventListener('click', close); };
+      setTimeout(() => document.addEventListener('click', close), 0);
+    });
+  }
+
   // Description expand
   card.querySelector('.car-description').addEventListener('click', function () {
     this.classList.toggle('expanded');
@@ -1183,10 +1225,57 @@ function renderFilterBar() {
     }
   }
 
-  // ── Attribútum szűrők (Üzemanyag, Váltó, Állapot, Évjárat) ──
+  // ── Attribútum szűrők (Márka, Típus, Üzemanyag, Váltó, Állapot, Évjárat) ──
   const rowAttr = document.getElementById('filterRowAttr');
   if (rowAttr) {
     rowAttr.innerHTML = '';
+
+    // Brand dropdown
+    const brands = [...new Set(cars.map(c => c.brand).filter(Boolean))].sort();
+    if (brands.length > 1) {
+      const selBrand = document.createElement('select');
+      selBrand.className = 'filter-attr-select';
+      const defB = document.createElement('option');
+      defB.value = ''; defB.textContent = 'Márka';
+      selBrand.appendChild(defB);
+      for (const b of brands) {
+        const opt = document.createElement('option');
+        opt.value = b; opt.textContent = b;
+        if (activeAttrFilters.brand === b) opt.selected = true;
+        selBrand.appendChild(opt);
+      }
+      selBrand.addEventListener('change', () => {
+        activeAttrFilters.brand = selBrand.value || null;
+        if (activeAttrFilters.model) {
+          const modelsForBrand = [...new Set(cars.filter(c => !activeAttrFilters.brand || c.brand === activeAttrFilters.brand).map(c => c.model).filter(Boolean))];
+          if (!modelsForBrand.includes(activeAttrFilters.model)) activeAttrFilters.model = null;
+        }
+        applyFilters(); renderFilterBar();
+      });
+      rowAttr.appendChild(selBrand);
+    }
+
+    // Model dropdown (filtered by selected brand)
+    const modelsSource = activeAttrFilters.brand
+      ? cars.filter(c => c.brand === activeAttrFilters.brand)
+      : cars;
+    const models = [...new Set(modelsSource.map(c => c.model).filter(Boolean))].sort();
+    if (models.length > 1) {
+      const selModel = document.createElement('select');
+      selModel.className = 'filter-attr-select';
+      const defM = document.createElement('option');
+      defM.value = ''; defM.textContent = 'Típus';
+      selModel.appendChild(defM);
+      for (const m of models) {
+        const opt = document.createElement('option');
+        opt.value = m; opt.textContent = m;
+        if (activeAttrFilters.model === m) opt.selected = true;
+        selModel.appendChild(opt);
+      }
+      selModel.addEventListener('change', () => { activeAttrFilters.model = selModel.value || null; applyFilters(); });
+      rowAttr.appendChild(selModel);
+    }
+
     for (const { key, label } of [
       { key: 'fuel', label: 'Üzemanyag' },
       { key: 'transmission', label: 'Váltó' },
@@ -1318,6 +1407,8 @@ function applyFilters() {
       const qf = QUICK_FILTERS.find(f => f.id === id);
       if (qf && !qf.test(car)) v = false;
     }
+    if (v && activeAttrFilters.brand)        v = car.brand === activeAttrFilters.brand;
+    if (v && activeAttrFilters.model)        v = car.model === activeAttrFilters.model;
     if (v && activeAttrFilters.fuel)         v = car.fuel === activeAttrFilters.fuel;
     if (v && activeAttrFilters.transmission) v = car.transmission === activeAttrFilters.transmission;
     if (v && activeAttrFilters.condition)    v = car.condition === activeAttrFilters.condition;
