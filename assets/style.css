@@ -1110,7 +1110,10 @@ body {
 /* ── Rank info modal list ───────────────────────────────── */
 .rank-info-list { list-style: none; margin-top: 10px; display: flex; flex-direction: column; gap: 6px; text-align: left; }
 .rank-info-list li { display: flex; align-items: flex-start; gap: 8px; font-size: 0.825rem; color: var(--text-muted); }
-.rank-info-list li .rank-info-pts { margin-top: 1px; }
+.rank-info-list li .rank-info-pts { margin-top: 1px; flex-shrink: 0; }
+.rank-info-li-col { flex-direction: column !important; gap: 4px !important; }
+.rank-info-row-inner { display: flex; align-items: flex-start; gap: 8px; }
+.rank-info-row-inner .rank-info-pts { margin-top: 1px; flex-shrink: 0; }
 .rank-info-pts {
   font-size: 0.72rem;
   font-weight: 700;
