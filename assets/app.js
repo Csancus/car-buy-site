@@ -110,7 +110,7 @@ function saveToStorage() {
 // API helpers (local server mode)
 // ============================================================
 async function apiAddCar(url) {
-  const resp = await fetch('/api/cars/add', {
+  const resp = await fetch('/api/cars', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ url }),
@@ -123,11 +123,11 @@ async function apiAddCar(url) {
 }
 
 async function apiDeleteCar(id) {
-  await fetch(`/api/cars/${id}`, { method: 'DELETE' });
+  await fetch(`/api/cars?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
 }
 
 async function apiAddComment(id, author, text) {
-  const resp = await fetch(`/api/cars/${id}/comment`, {
+  const resp = await fetch(`/api/comment?id=${encodeURIComponent(id)}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ author, text }),
@@ -136,7 +136,7 @@ async function apiAddComment(id, author, text) {
 }
 
 async function apiSaveOrder(ids) {
-  await fetch('/api/cars/order', {
+  await fetch('/api/order', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ ids }),
