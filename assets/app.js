@@ -1463,8 +1463,8 @@ async function saveEditModal() {
   modal.querySelectorAll('[data-field]').forEach(el => {
     const field = el.dataset.field;
     const raw = el.value.trim();
-    if (field === 'images') {
-      updates.images = raw.split('\n').map(s => s.trim()).filter(Boolean);
+    if (['images', 'top5', 'equipment'].includes(field)) {
+      updates[field] = raw.split('\n').map(s => s.trim()).filter(Boolean);
     } else if (['year', 'price', 'mileage', 'trunkVolume'].includes(field)) {
       updates[field] = raw ? parseInt(raw, 10) : null;
     } else if (field === 'consumption') {
@@ -1474,7 +1474,7 @@ async function saveEditModal() {
     }
   });
   Object.assign(c, updates);
-  c.top5 = computeTop5(c);
+  if (!('top5' in updates)) c.top5 = computeTop5(c);
   saveToStorage();
   const cardEl = document.querySelector(`.car-card[data-id="${_editingCarId}"]`);
   if (cardEl) populateCard(cardEl, c);
