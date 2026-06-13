@@ -116,7 +116,7 @@ let activeStatusFilters = new Set(['active', 'top']);
 let statusFilterOpen = false;
 let manualImageDataUrls = [];
 
-const SCORE_WEIGHTS = { price: 30, mileage: 25, year: 20, top5: 15, equipment: 10, location: 5 };
+const SCORE_WEIGHTS = { price: 35, mileage: 25, year: 20, top5: 15, equipment: 10, location: 5 };
 
 const QUICK_FILTERS = [
   {
