@@ -104,9 +104,39 @@ const CAR_FEATURES = [
 // ============================================================
 let cars = [];
 let autoRanks = {};
-let activePersonFilter = null;
+let activePersonFilter  = null;
 let lightboxImages = [];
 let lightboxIdx = 0;
+let activeSortBy        = null;   // 'price_asc' | 'price_desc'
+let activeQuickFilters  = new Set();
+let activeAttrFilters   = {};     // { fuel, transmission, condition, yearFrom, yearTo }
+let activeFeatureFilters = new Set();
+
+const QUICK_FILTERS = [
+  {
+    id: 'hybrid',
+    label: '⚡ Hybrid',
+    test: car => { const f = (car.fuel || '').toLowerCase(); return f.includes('hibrid') || f.includes('elektromos'); },
+  },
+  {
+    id: 'adj_seat',
+    label: '💺 Áll. ülésmagasság',
+    test: car => (car.equipment || []).some(e => {
+      const el = e.toLowerCase();
+      return el.includes('magasságra állítható') || (el.includes('állítható') && el.includes('ülés') && el.includes('magasság'));
+    }),
+  },
+  {
+    id: 'private',
+    label: '👤 Magánszemély',
+    test: car => car.sellerLabel === 'private' || (car.sellerType || '').toLowerCase().includes('magán'),
+  },
+  {
+    id: 'dealer',
+    label: '🏢 Cég / Kereskedő',
+    test: car => car.sellerLabel === 'dealer',
+  },
+];
 
 // ============================================================
 // Utils
@@ -579,6 +609,13 @@ function eqHasAll(eqLower, keywords) {
 // ============================================================
 // Rendering
 // ============================================================
+function getDisplayCars() {
+  const base = [...cars].sort((a, b) => a.order - b.order);
+  if (activeSortBy === 'price_asc')  return base.sort((a, b) => (a.price || Infinity)  - (b.price || Infinity));
+  if (activeSortBy === 'price_desc') return base.sort((a, b) => (b.price || -Infinity) - (a.price || -Infinity));
+  return base;
+}
+
 function renderAll() {
   const grid = document.getElementById('carsGrid');
   const empty = document.getElementById('emptyState');
@@ -602,9 +639,9 @@ function renderAll() {
     if (!currentIds.has(el.dataset.id)) el.remove();
   }
 
-  // Reorder and insert missing
+  // Reorder and insert missing (using display order which may differ from storage order)
   const fragment = document.createDocumentFragment();
-  for (const car of cars) {
+  for (const car of getDisplayCars()) {
     let cardEl = grid.querySelector(`.car-card[data-id="${car.id}"]`);
     if (!cardEl) {
       cardEl = buildCard(car);
@@ -615,7 +652,7 @@ function renderAll() {
   }
   grid.appendChild(fragment);
 
-  applyPersonFilter();
+  applyFilters();
   renderFilterBar();
 }
 
@@ -1166,44 +1203,193 @@ function getCarById(id) {
 // ============================================================
 function renderFilterBar() {
   const filterBar = document.getElementById('filterBar');
-  const pillsContainer = document.getElementById('filterPills');
-  if (!filterBar || !pillsContainer) return;
+  if (!filterBar) return;
+  filterBar.style.display = cars.length > 0 ? '' : 'none';
+  if (cars.length === 0) return;
 
-  const names = new Set();
-  for (const car of cars) {
-    for (const r of (car.rankings || [])) {
-      if (r.name) names.add(r.name);
+  // ── Ár rendezés ───────────────────────────────────────────
+  const rowSort = document.getElementById('filterRowSort');
+  if (rowSort) {
+    rowSort.innerHTML = '';
+    const lbl = document.createElement('span');
+    lbl.className = 'filter-section-label';
+    lbl.textContent = 'Ár:';
+    rowSort.appendChild(lbl);
+    for (const [key, icon, txt] of [['price_asc','↑','Növekvő'],['price_desc','↓','Csökkenő']]) {
+      const btn = document.createElement('button');
+      btn.className = 'filter-pill' + (activeSortBy === key ? ' active' : '');
+      btn.textContent = `${icon} ${txt}`;
+      btn.addEventListener('click', () => {
+        activeSortBy = activeSortBy === key ? null : key;
+        renderAll(); renderFilterBar();
+      });
+      rowSort.appendChild(btn);
     }
   }
 
-  filterBar.style.display = (cars.length > 0) ? '' : 'none';
-  pillsContainer.innerHTML = '';
+  // ── Quick filterek ────────────────────────────────────────
+  const rowQuick = document.getElementById('filterRowQuick');
+  if (rowQuick) {
+    rowQuick.innerHTML = '';
+    for (const qf of QUICK_FILTERS) {
+      const isActive = activeQuickFilters.has(qf.id);
+      const btn = document.createElement('button');
+      btn.className = 'filter-pill' + (isActive ? ' active' : '');
+      btn.innerHTML = escHtml(qf.label) + (isActive ? ' <span class="pill-x">×</span>' : '');
+      btn.addEventListener('click', () => {
+        if (activeQuickFilters.has(qf.id)) activeQuickFilters.delete(qf.id);
+        else activeQuickFilters.add(qf.id);
+        applyFilters(); renderFilterBar();
+      });
+      rowQuick.appendChild(btn);
+    }
+  }
 
-  for (const name of [...names].sort()) {
-    const pill = document.createElement('button');
-    pill.className = 'filter-pill' + (activePersonFilter === name ? ' active' : '');
-    pill.innerHTML = escHtml(name) + (activePersonFilter === name ? ' <span class="pill-x">×</span>' : '');
-    pill.addEventListener('click', () => {
-      activePersonFilter = (activePersonFilter === name) ? null : name;
-      applyPersonFilter();
-      renderFilterBar();
+  // ── Attribútum szűrők (Üzemanyag, Váltó, Állapot, Évjárat) ──
+  const rowAttr = document.getElementById('filterRowAttr');
+  if (rowAttr) {
+    rowAttr.innerHTML = '';
+    for (const { key, label } of [
+      { key: 'fuel', label: 'Üzemanyag' },
+      { key: 'transmission', label: 'Váltó' },
+      { key: 'condition', label: 'Állapot' },
+    ]) {
+      const vals = [...new Set(cars.map(c => c[key]).filter(Boolean))].sort();
+      if (!vals.length) continue;
+      const sel = document.createElement('select');
+      sel.className = 'filter-attr-select';
+      const defOpt = document.createElement('option');
+      defOpt.value = ''; defOpt.textContent = label;
+      sel.appendChild(defOpt);
+      for (const v of vals) {
+        const opt = document.createElement('option');
+        opt.value = v; opt.textContent = v;
+        if (activeAttrFilters[key] === v) opt.selected = true;
+        sel.appendChild(opt);
+      }
+      sel.addEventListener('change', () => { activeAttrFilters[key] = sel.value || null; applyFilters(); });
+      rowAttr.appendChild(sel);
+    }
+    const yearVals = cars.map(c => c.year).filter(Boolean);
+    if (yearVals.length > 1) {
+      const yLbl = document.createElement('span');
+      yLbl.className = 'filter-section-label'; yLbl.textContent = 'Évjárat:';
+      rowAttr.appendChild(yLbl);
+      for (const [field, ph] of [['yearFrom','tól'],['yearTo','ig']]) {
+        const inp = document.createElement('input');
+        inp.type = 'number'; inp.className = 'filter-year-input'; inp.placeholder = ph;
+        inp.min = Math.min(...yearVals); inp.max = Math.max(...yearVals);
+        inp.value = activeAttrFilters[field] || '';
+        inp.addEventListener('change', () => {
+          activeAttrFilters[field] = inp.value ? parseInt(inp.value) : null;
+          applyFilters();
+        });
+        rowAttr.appendChild(inp);
+      }
+    }
+  }
+
+  // ── Felszereltség szűrő (keresés a CAR_FEATURES / tényleges eq-ban) ──
+  const rowFeature = document.getElementById('filterRowFeature');
+  if (rowFeature) {
+    rowFeature.innerHTML = '';
+    // Active feature pills
+    for (const feat of activeFeatureFilters) {
+      const pill = document.createElement('button');
+      pill.className = 'filter-pill active';
+      pill.innerHTML = escHtml(feat) + ' <span class="pill-x">×</span>';
+      pill.addEventListener('click', () => {
+        activeFeatureFilters.delete(feat);
+        applyFilters(); renderFilterBar();
+      });
+      rowFeature.appendChild(pill);
+    }
+    // Search input
+    const wrap = document.createElement('div');
+    wrap.className = 'filter-feature-wrap';
+    const input = document.createElement('input');
+    input.type = 'text'; input.className = 'filter-feature-search';
+    input.placeholder = '🔍 Felszereltség szűrő…';
+    const suggestions = document.createElement('div');
+    suggestions.className = 'filter-feature-suggestions';
+    suggestions.style.display = 'none';
+
+    const availEq = new Set();
+    for (const car of cars) for (const e of (car.equipment || [])) availEq.add(e);
+
+    input.addEventListener('input', () => {
+      const q = input.value.toLowerCase().trim();
+      suggestions.innerHTML = '';
+      if (!q) { suggestions.style.display = 'none'; return; }
+      const matches = [...availEq]
+        .filter(f => f.toLowerCase().includes(q) && !activeFeatureFilters.has(f))
+        .slice(0, 12);
+      if (!matches.length) { suggestions.style.display = 'none'; return; }
+      for (const m of matches) {
+        const item = document.createElement('div');
+        item.className = 'filter-feature-suggestion-item';
+        item.textContent = m;
+        item.addEventListener('mousedown', e => {
+          e.preventDefault();
+          activeFeatureFilters.add(m);
+          input.value = '';
+          suggestions.style.display = 'none';
+          applyFilters(); renderFilterBar();
+        });
+        suggestions.appendChild(item);
+      }
+      suggestions.style.display = 'block';
     });
-    pillsContainer.appendChild(pill);
+    input.addEventListener('blur', () => { setTimeout(() => { suggestions.style.display = 'none'; }, 150); });
+    wrap.appendChild(input); wrap.appendChild(suggestions);
+    rowFeature.appendChild(wrap);
+  }
+
+  // ── Személy filter (rangsorok alapján) ────────────────────
+  const pillsContainer = document.getElementById('filterPills');
+  const rowPerson = document.getElementById('filterRowPerson');
+  if (pillsContainer) {
+    pillsContainer.innerHTML = '';
+    const names = new Set();
+    for (const car of cars) for (const r of (car.rankings || [])) if (r.name) names.add(r.name);
+    if (rowPerson) rowPerson.style.display = names.size > 0 ? '' : 'none';
+    for (const name of [...names].sort()) {
+      const pill = document.createElement('button');
+      pill.className = 'filter-pill' + (activePersonFilter === name ? ' active' : '');
+      pill.innerHTML = escHtml(name) + (activePersonFilter === name ? ' <span class="pill-x">×</span>' : '');
+      pill.addEventListener('click', () => {
+        activePersonFilter = activePersonFilter === name ? null : name;
+        applyFilters(); renderFilterBar();
+      });
+      pillsContainer.appendChild(pill);
+    }
   }
 }
 
-function applyPersonFilter() {
+function applyFilters() {
   const grid = document.getElementById('carsGrid');
   if (!grid) return;
   for (const cardEl of grid.querySelectorAll('.car-card')) {
-    if (!activePersonFilter) {
-      cardEl.style.display = '';
-      continue;
+    const car = cars.find(c => String(c.id) === String(cardEl.dataset.id));
+    if (!car) { cardEl.style.display = 'none'; continue; }
+    let v = true;
+    if (v && activePersonFilter)
+      v = (car.rankings || []).some(r => r.name === activePersonFilter);
+    for (const id of activeQuickFilters) {
+      if (!v) break;
+      const qf = QUICK_FILTERS.find(f => f.id === id);
+      if (qf && !qf.test(car)) v = false;
     }
-    const carId = cardEl.dataset.id;
-    const car = cars.find(c => String(c.id) === String(carId));
-    const hasFilter = car && (car.rankings || []).some(r => r.name === activePersonFilter);
-    cardEl.style.display = hasFilter ? '' : 'none';
+    if (v && activeAttrFilters.fuel)         v = car.fuel === activeAttrFilters.fuel;
+    if (v && activeAttrFilters.transmission) v = car.transmission === activeAttrFilters.transmission;
+    if (v && activeAttrFilters.condition)    v = car.condition === activeAttrFilters.condition;
+    if (v && activeAttrFilters.yearFrom)     v = (car.year || 0) >= activeAttrFilters.yearFrom;
+    if (v && activeAttrFilters.yearTo)       v = (car.year || 9999) <= activeAttrFilters.yearTo;
+    for (const feat of activeFeatureFilters) {
+      if (!v) break;
+      v = (car.equipment || []).includes(feat);
+    }
+    cardEl.style.display = v ? '' : 'none';
   }
 }
 

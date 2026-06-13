@@ -871,13 +871,99 @@ body {
   margin: 0 auto;
   padding: 10px 24px;
   display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
 }
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+.filter-row:empty { display: none !important; }
+.filter-section-label { font-size: 0.72rem; color: var(--text-dim); white-space: nowrap; flex-shrink: 0; }
 .filter-label { font-size: 0.775rem; color: var(--text-dim); white-space: nowrap; }
 
-.filter-pills { display: flex; gap: 5px; flex-wrap: wrap; flex: 1; }
+.filter-pills { display: flex; gap: 5px; flex-wrap: wrap; }
+
+/* Attribute filter selects */
+.filter-attr-select {
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 3px 24px 3px 10px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  transition: border-color var(--transition), color var(--transition);
+}
+.filter-attr-select:hover { border-color: var(--primary); color: var(--primary); }
+.filter-attr-select:focus { outline: none; border-color: var(--primary); }
+.filter-attr-select option { background: var(--bg-card); color: var(--text); }
+
+/* Year range inputs */
+.filter-year-input {
+  width: 68px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  font-family: inherit;
+  text-align: center;
+  transition: border-color var(--transition);
+}
+.filter-year-input:focus { outline: none; border-color: var(--primary); color: var(--text); }
+.filter-year-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+/* Feature search */
+.filter-feature-wrap { position: relative; }
+.filter-feature-search {
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 3px 12px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--bg-elevated);
+  color: var(--text);
+  font-family: inherit;
+  width: 200px;
+  transition: border-color var(--transition), box-shadow var(--transition), width var(--transition);
+}
+.filter-feature-search:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); width: 240px; }
+.filter-feature-search::placeholder { color: var(--text-dim); }
+.filter-feature-suggestions {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 240px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-hover);
+  z-index: 50;
+  max-height: 220px;
+  overflow-y: auto;
+}
+.filter-feature-suggestion-item {
+  padding: 7px 14px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+}
+.filter-feature-suggestion-item:hover { background: var(--bg-elevated); color: var(--text); }
 
 .filter-pill {
   font-size: 0.72rem;
