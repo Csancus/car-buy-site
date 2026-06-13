@@ -643,21 +643,25 @@ body {
   .header-actions { width: 100%; }
   .cars-grid     { grid-template-columns: 1fr; padding: 14px; gap: 14px; }
   .input-group   { flex-direction: column; }
+  .input-group .input-wrapper { width: 100%; }
+  .input-group .btn-primary   { width: 100%; justify-content: center; }
   .add-car-section { padding: 14px 0; }
   .add-car-inner { padding: 0 16px; }
 
   /* Filter bar — mobile */
   .filter-bar-inner { padding: 0 12px; }
   .filter-chips-row {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-    gap: 4px;
+    flex-wrap: wrap;
+    overflow-x: visible;
+    gap: 5px;
+    padding: 6px 0;
   }
-  .filter-chips-row::-webkit-scrollbar { display: none; }
   .filter-chips-divider { display: none; }
   .filter-controls-row { gap: 5px; flex-wrap: wrap; }
+  /* Search row: 2 lines on mobile */
+  .filter-search-row { flex-wrap: wrap; gap: 6px; }
+  .filter-search-row .search-input-wrap--hero { width: 100%; order: 1; }
+  .filter-search-row .filter-rank-actions { width: 100%; order: 2; justify-content: flex-start; }
   .filter-rank-actions { margin-left: 0; flex-shrink: 0; }
   .filter-search-wrap { width: 100%; min-width: 0; order: -1; }
   .filter-feature-wrap { display: none; }
