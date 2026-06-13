@@ -2318,15 +2318,20 @@ async function init() {
     btn.disabled = true;
     btn.textContent = 'Mentés…';
     try {
-      for (let i = 0; i < items.length; i++) {
-        const id = items[i].dataset.id;
-        const car = cars.find(c => String(c.id) === String(id));
-        if (!car) continue;
+      const payload = items.map((el, i) => ({ id: el.dataset.id, position: i + 1 }));
+      await fetch('/api/rankings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, items: payload }),
+      });
+      // update local cache
+      items.forEach((el, i) => {
+        const car = cars.find(c => String(c.id) === String(el.dataset.id));
+        if (!car) return;
         const rankings = (car.rankings || []).filter(r => r.name !== name);
         rankings.push({ name, position: i + 1 });
-        await apiUpdateCar(car.id, { rankings });
         car.rankings = rankings;
-      }
+      });
       closePrmModal();
       renderAll();
       renderFilterBar();
