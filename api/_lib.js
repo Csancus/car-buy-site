@@ -18,26 +18,33 @@ async function saveCars(cars) {
 // ── HTTP fetch via curl (bypasses Cloudflare TLS fingerprinting) ──
 const COOKIE_JAR = '/tmp/hasznaltauto_cookies.jar';
 
-function fetchUrl(targetUrl) {
+const CHROME_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
+const BASE_HEADERS = [
+  '-H', 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+  '-H', 'Accept-Language: hu-HU,hu;q=0.9,en-US;q=0.8,en;q=0.7',
+  '-H', 'Cache-Control: max-age=0',
+  '-H', 'sec-ch-ua: "Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
+  '-H', 'sec-ch-ua-mobile: ?0',
+  '-H', 'sec-ch-ua-platform: "Windows"',
+  '-H', 'Sec-Fetch-Dest: document',
+  '-H', 'Sec-Fetch-Mode: navigate',
+  '-H', 'Sec-Fetch-Site: none',
+  '-H', 'Sec-Fetch-User: ?1',
+  '-H', 'Upgrade-Insecure-Requests: 1',
+];
+
+function curlGet(url, extraArgs = []) {
   return new Promise((resolve, reject) => {
     execFile('curl', [
-      '-s', '-L',
-      '--compressed',
-      '--http2',
-      '--max-time', '25',
-      '-c', COOKIE_JAR,
-      '-b', COOKIE_JAR,
-      '-A', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      '-H', 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-      '-H', 'Accept-Language: hu-HU,hu;q=0.9,en;q=0.8',
-      '-H', 'Upgrade-Insecure-Requests: 1',
-      '-H', 'Sec-Fetch-Dest: document',
-      '-H', 'Sec-Fetch-Mode: navigate',
-      '-H', 'Sec-Fetch-Site: none',
-      '-H', 'Sec-Fetch-User: ?1',
+      '-s', '-L', '--compressed', '--http2',
+      '--max-time', '20',
+      '-c', COOKIE_JAR, '-b', COOKIE_JAR,
+      '-A', CHROME_UA,
+      ...BASE_HEADERS,
+      ...extraArgs,
       '-w', '\n__CURL_STATUS__%{http_code}',
-      targetUrl,
-    ], { maxBuffer: 10 * 1024 * 1024 }, (err, stdout) => {
+      url,
+    ], { maxBuffer: 12 * 1024 * 1024 }, (err, stdout) => {
       if (err) return reject(new Error(err.message));
       const marker = '\n__CURL_STATUS__';
       const idx = stdout.lastIndexOf(marker);
@@ -47,6 +54,33 @@ function fetchUrl(targetUrl) {
       resolve(body);
     });
   });
+}
+
+// Warm up Cloudflare session via homepage first
+let lastWarm = 0;
+async function warmSession() {
+  if (Date.now() - lastWarm < 60_000) return; // skip if warmed within 1 min
+  await new Promise(resolve => {
+    execFile('curl', [
+      '-s', '-L', '--compressed', '--http2',
+      '--max-time', '15',
+      '-c', COOKIE_JAR, '-b', COOKIE_JAR,
+      '-o', '/dev/null',
+      '-A', CHROME_UA,
+      ...BASE_HEADERS,
+      '-H', 'Referer: https://www.google.com/',
+      'https://www.hasznaltauto.hu/',
+    ], { maxBuffer: 1024 * 1024 }, () => resolve());
+  });
+  lastWarm = Date.now();
+}
+
+async function fetchUrl(targetUrl) {
+  await warmSession();
+  return curlGet(targetUrl, [
+    '-H', 'Referer: https://www.hasznaltauto.hu/',
+    '-H', 'Sec-Fetch-Site: same-origin',
+  ]);
 }
 
 // ── Parsing ───────────────────────────────────────────────────────
