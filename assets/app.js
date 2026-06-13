@@ -577,6 +577,7 @@ function computeAutoScore(car) {
   if (fuel.includes('plug-in') || fuel.includes('plugin')) score += 10;
   const trans = (car.transmission || '').toLowerCase();
   if (trans.includes('automat') || trans.includes('fokozatmentes') || trans.includes('tiptronic') || trans.includes('dct') || trans.includes('cvt')) score += 10;
+  if (car.carConditionLabel === 'new') score += 10;
   return score;
 }
 
@@ -781,11 +782,13 @@ function populateCard(card, car) {
         const locLow  = (car.sellerLocation || '').toLowerCase();
         const pLoc    = (locLow.includes('budapest') || locLow.includes('pest')) ? `+${W.location}` : '0';
         const total   = computeAutoScore(car).toFixed(1);
+        const pNew = car.carConditionLabel === 'new' ? '+10' : '0';
         rankInfoBtn.dataset.scoreHtml =
           `Ár: ${pPrice} pt\nKm-óra: ${pKm} pt\nÉvjárat: ${pYear} pt\n` +
           `Kiemelések (${(car.top5||[]).length}/5): ${pTop5} pt\n` +
           `Felszereltség (${(car.equipment||[]).length} elem): ${pEquip} pt\n` +
           `Budapest/Pest: ${pLoc} pt\n` +
+          `Új autó bónusz: ${pNew} pt\n` +
           `Összesen: ${total} pt`;
         rankInfoBtn.style.display = 'inline';
       }
