@@ -1198,13 +1198,19 @@ body {
 .ranking-input-name::placeholder,
 .ranking-input-pos::placeholder { color: var(--text-dim); }
 
-/* ── Rank info modal list ───────────────────────────────── */
-.rank-info-list { list-style: none; margin-top: 10px; display: flex; flex-direction: column; gap: 6px; text-align: left; }
-.rank-info-list li { display: flex; align-items: flex-start; gap: 8px; font-size: 0.825rem; color: var(--text-muted); }
-.rank-info-list li .rank-info-pts { margin-top: 1px; flex-shrink: 0; }
-.rank-info-li-col { flex-direction: column !important; gap: 4px !important; }
-.rank-info-row-inner { display: flex; align-items: flex-start; gap: 8px; }
-.rank-info-row-inner .rank-info-pts { margin-top: 1px; flex-shrink: 0; }
+/* ── Rank info modal — editable list ────────────────────── */
+.rank-info-editable { margin-top: 10px; display: flex; flex-direction: column; gap: 4px; }
+#rankInfoModal .modal-box { max-width: 520px; }
+.rank-edit-row { display: flex; align-items: center; gap: 8px; font-size: 0.825rem; color: var(--text-muted); padding: 3px 0; }
+.rank-edit-label { flex: 1; }
+.btn-rank-icon { background: none; border: none; cursor: pointer; padding: 2px 5px; font-size: 0.85rem; color: var(--text-dim); border-radius: 4px; line-height: 1; }
+.btn-rank-icon:hover { background: var(--bg-elevated); color: var(--text); }
+.btn-rank-del:hover { color: var(--red); }
+.rank-pts-input { width: 52px; text-align: center; font-size: 0.8rem; font-weight: 700; border: 1px solid var(--border); border-radius: 4px; padding: 2px 4px; background: var(--bg); color: var(--text); font-family: inherit; flex-shrink: 0; }
+.rank-add-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+.rank-add-select { flex: 1; font-size: 0.8rem; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 5px 8px; background: var(--bg); color: var(--text); font-family: inherit; cursor: pointer; }
+.rank-reset-row { margin-top: 6px; text-align: right; }
+/* legacy (kept for tooltip) */
 .rank-info-pts {
   font-size: 0.72rem;
   font-weight: 700;

@@ -116,7 +116,27 @@ let activeStatusFilters = new Set(['active', 'top']);
 let statusFilterOpen = false;
 let manualImageDataUrls = [];
 
-const SCORE_WEIGHTS = { price: 40, mileage: 25, year: 20, location: 5 };
+const DEFAULT_SCORE_CONFIG = [
+  { id: 'price',       label: 'Ár',                    desc: 'minél olcsóbb, annál jobb',   pts: 40, compute: 'price' },
+  { id: 'mileage',     label: 'Km-óraállás',            desc: 'minél kevesebb, annál jobb',  pts: 25, compute: 'mileage' },
+  { id: 'year',        label: 'Évjárat',                desc: 'minél újabb, annál jobb',      pts: 20, compute: 'year' },
+  { id: 'phev',        label: 'PHEV (plug-in hibrid)',   desc: 'bónusz',                      pts: 10, compute: 'phev' },
+  { id: 'hybrid',      label: 'Hybrid (HEV)',            desc: 'bónusz',                      pts:  5, compute: 'hybrid' },
+  { id: 'auto',        label: 'Automata váltó',          desc: 'bónusz',                      pts: 10, compute: 'auto' },
+  { id: 'consumption', label: 'Alacsony fogyasztás',     desc: '4,5 l/100km = max pt',        pts:  5, compute: 'consumption' },
+  { id: 'new_car',     label: 'Új autó',                 desc: 'hozzáadott — bónusz',         pts:  5, compute: 'new_car' },
+  { id: 'location',    label: 'Budapest / Pest megye',   desc: 'eladó helye',                 pts:  5, compute: 'location' },
+];
+const EXTRA_CRITERIA = [
+  { id: 'electric',       label: 'Elektromos hajtás',        desc: 'bónusz',   pts: 10, compute: 'electric' },
+  { id: 'trunkVolume',    label: 'Nagy csomagtartó (>400 l)', desc: 'bónusz',   pts:  5, compute: 'trunkVolume' },
+  { id: 'seller_private', label: 'Magán eladó',              desc: 'bónusz',   pts:  3, compute: 'seller_private' },
+  { id: 'condition_good', label: 'Újszerű állapot',           desc: 'bónusz',   pts:  3, compute: 'condition_good' },
+];
+let scoreConfig = DEFAULT_SCORE_CONFIG.map(x => ({ ...x }));
+async function saveScoreConfig() {
+  await fetch('/api/config', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ scoreConfig }) });
+}
 
 const QUICK_FILTERS = [
   {
@@ -571,23 +591,27 @@ function attachAutocomplete(inputEl, onSelect) {
 // ============================================================
 // Auto Ranking
 // ============================================================
-function computeAutoScore(car) {
-  const W = SCORE_WEIGHTS;
-  let score = 0;
-  if (car.price) score += Math.max(0, W.price * (1 - car.price / 15_000_000));
-  if (car.mileage != null) score += Math.max(0, W.mileage * (1 - car.mileage / 300_000));
-  if (car.year) score += Math.max(0, Math.min(W.year, (car.year - 2010) / 16 * W.year));
-  const loc = (car.sellerLocation || '').toLowerCase();
-  if (loc.includes('budapest') || loc.includes('pest')) score += W.location;
-  const fuel = (car.fuel || '').toLowerCase();
-  if (fuel.includes('plug-in') || fuel.includes('plugin')) score += 10;
-  else if (fuel.includes('hibrid')) score += 5;
-  const trans = (car.transmission || '').toLowerCase();
-  if (trans.includes('automat') || trans.includes('fokozatmentes') || trans.includes('tiptronic') || trans.includes('dct') || trans.includes('cvt')) score += 10;
-  if (car.carConditionLabel === 'new') score += 5;
-  if (car.consumption != null) score += Math.max(0, Math.min(5, 5 * (1 - (car.consumption - 4.5) / 3)));
-  return score;
+function computeScorePart(car, item) {
+  const pts = item.pts || 0;
+  if (!pts) return 0;
+  switch (item.compute) {
+    case 'price':    return car.price    ? Math.max(0, pts * (1 - car.price / 15_000_000))                         : 0;
+    case 'mileage':  return car.mileage  != null ? Math.max(0, pts * (1 - car.mileage / 300_000))                  : 0;
+    case 'year':     return car.year     ? Math.max(0, Math.min(pts, (car.year - 2010) / 16 * pts))                : 0;
+    case 'consumption': return car.consumption != null ? Math.max(0, Math.min(pts, pts * (1 - (car.consumption - 4.5) / 3))) : 0;
+    case 'phev':     { const f=(car.fuel||'').toLowerCase(); return (f.includes('plug-in')||f.includes('plugin')) ? pts : 0; }
+    case 'hybrid':   { const f=(car.fuel||'').toLowerCase(); return f.includes('hibrid')&&!f.includes('plug-in')&&!f.includes('plugin') ? pts : 0; }
+    case 'electric': return (car.fuel||'').toLowerCase().includes('elektromos') ? pts : 0;
+    case 'auto':     { const t=(car.transmission||'').toLowerCase(); return (t.includes('automat')||t.includes('fokozatmentes')||t.includes('tiptronic')||t.includes('dct')||t.includes('cvt')) ? pts : 0; }
+    case 'new_car':  return car.carConditionLabel === 'new' ? pts : 0;
+    case 'location': { const l=(car.sellerLocation||'').toLowerCase(); return (l.includes('budapest')||l.includes('pest')) ? pts : 0; }
+    case 'trunkVolume':    return parseInt(car.trunkVolume) > 400 ? pts : 0;
+    case 'seller_private': return (car.sellerType||'').toLowerCase().includes('magán') ? pts : 0;
+    case 'condition_good': { const c=(car.condition||'').toLowerCase(); return (c.includes('újszer')||c.includes('sérülésmentes')) ? pts : 0; }
+    default: return 0;
+  }
 }
+function computeAutoScore(car) { return scoreConfig.reduce((s, item) => s + computeScorePart(car, item), 0); }
 
 function refreshAutoRanks() {
   const sorted = [...cars].sort((a, b) => computeAutoScore(b) - computeAutoScore(a));
@@ -789,35 +813,12 @@ function populateCard(card, car) {
       rankBadge.style.display = 'inline';
       rankBadge.className = `auto-rank-badge rank-${rank <= 3 ? rank : 'other'}`;
       if (rankInfoBtn) {
-        const W = SCORE_WEIGHTS;
-        const pPrice  = car.price    ? Math.max(0, W.price   * (1 - car.price / 15_000_000)).toFixed(1)  : '—';
-        const pKm     = car.mileage != null ? Math.max(0, W.mileage * (1 - car.mileage / 300_000)).toFixed(1) : '—';
-        const pYear   = car.year     ? Math.max(0, Math.min(W.year, (car.year - 2010) / 16 * W.year)).toFixed(1) : '—';
-        const locLow  = (car.sellerLocation || '').toLowerCase();
-        const pLoc    = (locLow.includes('budapest') || locLow.includes('pest')) ? `+${W.location}` : null;
-        const fuelLow = (car.fuel || '').toLowerCase();
-        const pPhev   = (fuelLow.includes('plug-in') || fuelLow.includes('plugin')) ? '+10' : null;
-        const pHybrid = (!fuelLow.includes('plug-in') && !fuelLow.includes('plugin') && fuelLow.includes('hibrid')) ? '+5' : null;
-        const transLow = (car.transmission || '').toLowerCase();
-        const pAuto   = (transLow.includes('automat') || transLow.includes('fokozatmentes') || transLow.includes('tiptronic') || transLow.includes('dct') || transLow.includes('cvt')) ? '+10' : null;
-        const pNew    = car.carConditionLabel === 'new' ? '+5' : null;
-        const pConsump = car.consumption != null
-          ? Math.max(0, Math.min(5, 5 * (1 - (car.consumption - 4.5) / 3))).toFixed(1)
-          : null;
-        const total   = computeAutoScore(car).toFixed(1);
+        const total = computeAutoScore(car).toFixed(1);
         rankBadge.textContent = `#${rank} · ${total} pt`;
-        const lines = [
-          `Ár: ${pPrice} pt`,
-          `Km-óra: ${pKm} pt`,
-          `Évjárat: ${pYear} pt`,
-          pLoc     ? `Budapest/Pest: ${pLoc} pt` : null,
-          pPhev    ? `PHEV bónusz: ${pPhev} pt` : null,
-          pHybrid  ? `Hybrid bónusz: ${pHybrid} pt` : null,
-          pAuto    ? `Automata bónusz: ${pAuto} pt` : null,
-          pNew     ? `Új autó bónusz: ${pNew} pt` : null,
-          pConsump ? `Fogyasztás (${car.consumption} l): ${pConsump} pt` : null,
-          `Összesen: ${total} pt`,
-        ].filter(Boolean);
+        const lines = scoreConfig
+          .map(item => { const p = computeScorePart(car, item); return p > 0 ? `${item.label}: +${p.toFixed(1)} pt` : null; })
+          .filter(Boolean);
+        lines.push(`Összesen: ${total} pt`);
         rankInfoBtn.dataset.scoreHtml = lines.join('\n');
         rankInfoBtn.style.display = 'inline';
       }
@@ -2039,13 +2040,117 @@ function initSortable() {
 }
 
 // ============================================================
+// Rank info modal (editable)
+// ============================================================
+function renderRankInfoModal() {
+  const container = document.getElementById('rankInfoList');
+  if (!container) return;
+  container.innerHTML = '';
+
+  scoreConfig.forEach((item, idx) => {
+    const row = document.createElement('div');
+    row.className = 'rank-edit-row';
+    const pts = document.createElement('span');
+    pts.className = 'rank-info-pts';
+    pts.textContent = item.pts + ' pt';
+    const lbl = document.createElement('span');
+    lbl.className = 'rank-edit-label';
+    lbl.textContent = `${item.label}${item.desc ? ' — ' + item.desc : ''}`;
+    const editBtn = document.createElement('button');
+    editBtn.className = 'btn-rank-icon';
+    editBtn.title = 'Szerkesztés';
+    editBtn.textContent = '✏️';
+    editBtn.addEventListener('click', () => startEditRow(row, idx));
+    const delBtn = document.createElement('button');
+    delBtn.className = 'btn-rank-icon btn-rank-del';
+    delBtn.title = 'Törlés';
+    delBtn.textContent = '×';
+    delBtn.addEventListener('click', async () => {
+      scoreConfig.splice(idx, 1);
+      await saveScoreConfig();
+      refreshAutoRanks(); renderAll(); renderRankInfoModal();
+    });
+    row.append(pts, lbl, editBtn, delBtn);
+    container.appendChild(row);
+  });
+
+  // Add new criterion
+  const allIds = new Set(scoreConfig.map(x => x.id));
+  const addable = [...DEFAULT_SCORE_CONFIG, ...EXTRA_CRITERIA].filter(x => !allIds.has(x.id));
+  if (addable.length > 0) {
+    const addRow = document.createElement('div');
+    addRow.className = 'rank-add-row';
+    const sel = document.createElement('select');
+    sel.className = 'rank-add-select';
+    const def = document.createElement('option');
+    def.value = ''; def.textContent = '+ Szempont hozzáadása…';
+    sel.appendChild(def);
+    addable.forEach(c => { const o = document.createElement('option'); o.value = c.id; o.textContent = c.label; sel.appendChild(o); });
+    const addBtn = document.createElement('button');
+    addBtn.className = 'btn btn-sm btn-primary';
+    addBtn.textContent = 'Hozzáadás';
+    addBtn.addEventListener('click', async () => {
+      if (!sel.value) return;
+      const tmpl = [...DEFAULT_SCORE_CONFIG, ...EXTRA_CRITERIA].find(x => x.id === sel.value);
+      if (!tmpl) return;
+      scoreConfig.push({ ...tmpl });
+      await saveScoreConfig();
+      refreshAutoRanks(); renderAll(); renderRankInfoModal();
+    });
+    addRow.append(sel, addBtn);
+    container.appendChild(addRow);
+  }
+
+  // Reset
+  const resetRow = document.createElement('div');
+  resetRow.className = 'rank-reset-row';
+  const resetBtn = document.createElement('button');
+  resetBtn.className = 'btn btn-sm btn-ghost';
+  resetBtn.textContent = '↺ Alapértelmezett';
+  resetBtn.addEventListener('click', async () => {
+    scoreConfig = DEFAULT_SCORE_CONFIG.map(x => ({ ...x }));
+    await saveScoreConfig();
+    refreshAutoRanks(); renderAll(); renderRankInfoModal();
+  });
+  resetRow.appendChild(resetBtn);
+  container.appendChild(resetRow);
+}
+
+function startEditRow(row, idx) {
+  const item = scoreConfig[idx];
+  row.innerHTML = '';
+  const inp = document.createElement('input');
+  inp.type = 'number'; inp.className = 'rank-pts-input'; inp.value = item.pts; inp.min = 0; inp.max = 200;
+  const lbl = document.createElement('span');
+  lbl.className = 'rank-edit-label';
+  lbl.textContent = `${item.label}${item.desc ? ' — ' + item.desc : ''}`;
+  const ok = document.createElement('button');
+  ok.className = 'btn-rank-icon'; ok.textContent = '✓'; ok.title = 'Mentés';
+  ok.addEventListener('click', async () => {
+    item.pts = Math.max(0, Math.min(200, parseInt(inp.value) || 0));
+    await saveScoreConfig();
+    refreshAutoRanks(); renderAll(); renderRankInfoModal();
+  });
+  const cancel = document.createElement('button');
+  cancel.className = 'btn-rank-icon'; cancel.textContent = '✗'; cancel.title = 'Mégse';
+  cancel.addEventListener('click', () => renderRankInfoModal());
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') ok.click(); if (e.key === 'Escape') cancel.click(); });
+  row.append(inp, lbl, ok, cancel);
+  inp.focus(); inp.select();
+}
+
+// ============================================================
 // Init
 // ============================================================
 async function init() {
   try {
-    cars = await apiLoadCars();
+    const [carsData, cfgData] = await Promise.all([apiLoadCars(), fetch('/api/config').then(r => r.json()).catch(() => null)]);
+    cars = carsData;
     cars.forEach((c, i) => { if (c.order == null) c.order = i; });
     saveToStorage();
+    if (cfgData && Array.isArray(cfgData.scoreConfig) && cfgData.scoreConfig.length) {
+      scoreConfig = cfgData.scoreConfig;
+    }
   } catch (e) {
     console.warn('API load failed, using localStorage cache', e);
     cars = loadFromStorage() || [];
@@ -2204,6 +2309,7 @@ async function init() {
   // Rank info modal
   const rankInfoModal = document.getElementById('rankInfoModal');
   document.getElementById('btnRankInfo').addEventListener('click', () => {
+    renderRankInfoModal();
     rankInfoModal.classList.add('visible');
   });
   document.getElementById('rankInfoClose').addEventListener('click', () => {
