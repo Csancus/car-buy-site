@@ -2122,7 +2122,8 @@ function initSortable() {
     ghostClass: 'sortable-ghost',
     dragClass: 'sortable-drag',
     handle: '.card-header-row',
-    filter: '.btn-archive, .btn-avail, .status-select, .slide-btn, .btn-toggle-equip, .comment-form, a',
+    filter: '.btn-archive, .btn-avail, .status-select, .slide-btn, .btn-toggle-equip, a',
+    preventOnFilter: false,
     onEnd: async () => {
       const cardEls = grid.querySelectorAll('.car-card');
       cardEls.forEach((el, i) => {
