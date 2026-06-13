@@ -1388,3 +1388,134 @@ body {
 }
 .rank-top5-detail.open { display: block; }
 .rank-weight-total-row { font-size: .8rem; color: var(--text-dim); margin-top: 8px; text-align: right; }
+
+/* ── Filter rank action group ───────────────────────────── */
+.filter-rank-actions {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.filter-controls-row > .btn-rank-info { margin-left: 0; }
+
+/* ── Personal ranking modal ─────────────────────────────── */
+.prm-box {
+  max-width: 520px;
+  width: 95%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.prm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.prm-name-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.prm-name-label { font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; }
+.prm-name-input {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.825rem;
+  padding: 5px 10px;
+  width: 140px;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.prm-name-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
+.prm-existing-names { display: flex; gap: 5px; flex-wrap: wrap; }
+.prm-name-chip {
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background var(--transition), color var(--transition), border-color var(--transition);
+}
+.prm-name-chip:hover { border-color: var(--primary); color: var(--primary); }
+.prm-hint { font-size: 0.78rem; color: var(--text-dim); margin-bottom: 10px; }
+.prm-list {
+  list-style: none;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-height: 60px;
+}
+.prm-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  user-select: none;
+  transition: box-shadow var(--transition), border-color var(--transition);
+}
+.prm-item.sortable-chosen { box-shadow: var(--shadow-hover); border-color: var(--primary); }
+.prm-pos {
+  min-width: 22px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-align: center;
+  flex-shrink: 0;
+}
+.prm-thumb {
+  width: 56px;
+  height: 36px;
+  object-fit: cover;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.prm-thumb-empty {
+  width: 56px;
+  height: 36px;
+  background: var(--border);
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.prm-car-name {
+  flex: 1;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.prm-car-price {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.prm-drag-handle {
+  font-size: 1.1rem;
+  color: var(--text-dim);
+  cursor: grab;
+  flex-shrink: 0;
+  line-height: 1;
+  padding: 0 2px;
+  letter-spacing: -2px;
+}
+.prm-drag-handle:active { cursor: grabbing; }
+.prm-actions { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 14px; }

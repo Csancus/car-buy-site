@@ -99,14 +99,20 @@
           <div class="filter-pills" id="filterPills"></div>
         </div>
       </div>
-      <!-- Sor 2: attribútum szűrők + felszereltség keresés + Rangsor gomb -->
+      <!-- Sor 2: attribútum szűrők + felszereltség keresés + Rangsor gombok -->
       <div class="filter-controls-row">
         <div class="filter-row" id="filterRowAttr"></div>
         <div class="filter-row" id="filterRowFeature"></div>
-        <button class="btn-rank-info btn btn-sm btn-outline" id="btnRankInfo" title="Automatikus rangsor módszertana">
-          <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-          Rangsor
-        </button>
+        <div class="filter-rank-actions">
+          <button class="btn btn-sm btn-outline" id="btnOpenPrm">
+            <svg class="ic" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+            Saját rangsor
+          </button>
+          <button class="btn-rank-info btn btn-sm btn-outline" id="btnRankInfo" title="Automatikus rangsor módszertana">
+            <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+            Rangsor
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -183,22 +189,6 @@
 
       <!-- Details — hidden until expanded -->
       <div class="card-details">
-        <div class="card-slideshow">
-          <div class="slideshow-images">
-            <img class="slideshow-img" src="" alt="" loading="lazy" />
-          </div>
-          <button class="slide-btn slide-prev">
-            <svg class="ic" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
-          </button>
-          <button class="slide-btn slide-next">
-            <svg class="ic" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
-          </button>
-          <span class="slide-counter">1/1</span>
-          <a class="card-link-badge" href="#" target="_blank" rel="noopener">
-            <svg class="ic" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-            Hirdetés
-          </a>
-        </div>
 
         <div class="card-body">
           <div class="specs-strip">
@@ -383,47 +373,46 @@
       </div>
       <div class="modal-title">Automatikus rangsor</div>
       <div class="modal-message">
-        Az autók automatikusan pontozódnak az alábbi szempontok szerint. A pontokat szabadon átírhatod:
+        Az autók automatikusan pontozódnak az alábbi szempontok szerint (összesen max 100 pont):
         <ul class="rank-info-list">
+          <li><span class="rank-info-pts">30 pt</span> Ár — minél olcsóbb, annál jobb</li>
+          <li><span class="rank-info-pts">25 pt</span> Km-óraállás — minél kevesebb, annál jobb</li>
+          <li><span class="rank-info-pts">20 pt</span> Évjárat — minél újabb, annál jobb</li>
           <li>
-            <label class="rank-info-row">
-              <input type="number" class="rank-weight-input" id="wPrice" min="0" max="200" value="30">
-              <span>Ár — minél olcsóbb, annál jobb</span>
-            </label>
-          </li>
-          <li>
-            <label class="rank-info-row">
-              <input type="number" class="rank-weight-input" id="wMileage" min="0" max="200" value="25">
-              <span>Km-óraállás — minél kevesebb, annál jobb</span>
-            </label>
-          </li>
-          <li>
-            <label class="rank-info-row">
-              <input type="number" class="rank-weight-input" id="wYear" min="0" max="200" value="20">
-              <span>Évjárat — minél újabb, annál jobb</span>
-            </label>
-          </li>
-          <li>
-            <label class="rank-info-row">
-              <input type="number" class="rank-weight-input" id="wTop5" min="0" max="200" value="15">
-              <span>Top 5 kiemelések száma <button class="rank-expand-btn" id="btnTop5Expand" type="button">mit néz? ▾</button></span>
-            </label>
+            <span class="rank-info-pts">15 pt</span> Top 5 kiemelések száma
+            <button class="rank-expand-btn" id="btnTop5Expand" type="button">mit néz? ▾</button>
             <div class="rank-top5-detail" id="top5Detail">
               Plugin hibrid / elektromos, Alacsony km-óraállás, Szinte új autó, Sérülésmentes karosszéria, Első tulajdonostól, Garanciális, GPS Navigáció, 360° kamera, Panorámatető, Head-up kijelző, Tolatókamera, Napfénytető, Adaptív tempomat, Kulcs nélküli kezelés, 4WD összkerékhajtás, Bőrülések, Fűtött első+hátsó ülések, CarPlay / Android Auto, Vezeték nélküli töltő, Holttér-figyelő, Ventilált ülések, Masszázs, LED fényszórók, Elektromos csomagtérajtó, Sávtartó, Éjjellátó
             </div>
           </li>
-          <li>
-            <label class="rank-info-row">
-              <input type="number" class="rank-weight-input" id="wEquip" min="0" max="200" value="10">
-              <span>Felszereltség gazdagsága <small>(felszereltség elemek száma / 5)</small></span>
-            </label>
-          </li>
+          <li><span class="rank-info-pts">10 pt</span> Felszereltség gazdagsága <small>(elemek száma / 5)</small></li>
         </ul>
-        <div class="rank-weight-total-row">Összesen: <strong id="rankWeightTotal">100</strong> pt</div>
       </div>
       <div class="modal-actions">
         <button class="btn-modal-cancel" id="rankInfoClose">Bezárás</button>
-        <button class="btn btn-sm btn-primary" id="btnSaveWeights">Mentés</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Personal ranking modal -->
+  <div class="modal-overlay" id="prmModal" style="display:none">
+    <div class="modal-box prm-box">
+      <div class="prm-header">
+        <div class="modal-title">Saját rangsor</div>
+        <button class="btn btn-ghost btn-icon-only btn-sm" id="btnClosePrm">
+          <svg class="ic" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
+      <div class="prm-name-section">
+        <label class="prm-name-label">Neved:</label>
+        <input type="text" id="prmNameInput" class="prm-name-input" placeholder="Pl. Csanád" autocomplete="off" />
+        <div id="prmExistingNames" class="prm-existing-names"></div>
+      </div>
+      <p class="prm-hint">Húzd át az autókat a kívánt sorrendbe:</p>
+      <ul id="prmList" class="prm-list"></ul>
+      <div class="modal-actions prm-actions">
+        <button class="btn btn-ghost btn-sm" id="btnCancelPrm">Mégse</button>
+        <button class="btn btn-primary btn-sm" id="btnSavePrm">Mentés</button>
       </div>
     </div>
   </div>

@@ -112,12 +112,7 @@ let activeQuickFilters  = new Set();
 let activeAttrFilters   = {};     // { fuel, transmission, condition, yearFrom, yearTo }
 let activeFeatureFilters = new Set();
 
-const SCORE_WEIGHTS_KEY = 'carbuy_score_weights';
-let SCORE_WEIGHTS = { price: 30, mileage: 25, year: 20, top5: 15, equipment: 10 };
-try {
-  const sw = JSON.parse(localStorage.getItem(SCORE_WEIGHTS_KEY) || '{}');
-  if (sw && typeof sw === 'object') Object.assign(SCORE_WEIGHTS, sw);
-} catch (e) {}
+const SCORE_WEIGHTS = { price: 30, mileage: 25, year: 20, top5: 15, equipment: 10 };
 
 const QUICK_FILTERS = [
   {
@@ -619,6 +614,13 @@ function eqHasAll(eqLower, keywords) {
 // ============================================================
 function getDisplayCars() {
   const base = [...cars].sort((a, b) => a.order - b.order);
+  if (activePersonFilter) {
+    return base.sort((a, b) => {
+      const posA = (a.rankings || []).find(r => r.name === activePersonFilter)?.position ?? 999;
+      const posB = (b.rankings || []).find(r => r.name === activePersonFilter)?.position ?? 999;
+      return posA - posB;
+    });
+  }
   if (activeSortBy === 'price_asc')  return base.sort((a, b) => (a.price || Infinity)  - (b.price || Infinity));
   if (activeSortBy === 'price_desc') return base.sort((a, b) => (b.price || -Infinity) - (a.price || -Infinity));
   if (activeSortBy === 'rank')       return base.sort((a, b) => computeAutoScore(b) - computeAutoScore(a));
@@ -737,41 +739,10 @@ function populateCard(card, car) {
     warrantyEl.style.display = hasWarranty ? '' : 'none';
   }
 
-  // Detail slideshow
-  const img = card.querySelector('.slideshow-img');
-  const counter = card.querySelector('.slide-counter');
-  const slidePrev = card.querySelector('.slide-prev');
-  const slideNext = card.querySelector('.slide-next');
-  const slideshowEl = card.querySelector('.card-slideshow');
-
+  // Track current image index (shared with summary thumbnail)
   let currentIdx = parseInt(card.dataset.imgIdx || '0', 10);
   if (currentIdx >= (car.images || []).length) currentIdx = 0;
   card.dataset.imgIdx = currentIdx;
-
-  if (car.images && car.images.length > 0) {
-    img.src = car.images[currentIdx];
-    img.alt = car.name;
-    img.style.display = 'block';
-    const ph = slideshowEl && slideshowEl.querySelector('.no-image-placeholder');
-    if (ph) ph.remove();
-    if (counter) counter.textContent = `${currentIdx + 1}/${car.images.length}`;
-  } else {
-    img.style.display = 'none';
-    if (slideshowEl && !slideshowEl.querySelector('.no-image-placeholder')) {
-      const ph = document.createElement('div');
-      ph.className = 'no-image-placeholder';
-      ph.textContent = '🚗';
-      const si = slideshowEl.querySelector('.slideshow-images');
-      if (si) si.appendChild(ph);
-    }
-    if (counter) counter.textContent = '0/0';
-  }
-
-  if (slidePrev) slidePrev.style.display = (car.images && car.images.length > 1) ? 'flex' : 'none';
-  if (slideNext) slideNext.style.display = (car.images && car.images.length > 1) ? 'flex' : 'none';
-
-  const link = card.querySelector('.card-link-badge');
-  if (link) link.href = car.url;
 
   // Specs strip
   const setSpec = (cls, val) => { const el = card.querySelector(cls); if (el) el.textContent = val || '—'; };
@@ -928,14 +899,8 @@ function attachCardEvents(card, car) {
   const carId = car.id;
 
 
-  // Summary image → lightbox
+  // Summary image → lightbox at current slide
   card.querySelector('.summary-img').addEventListener('click', () => {
-    const c = getCarById(carId);
-    if (c && c.images && c.images.length) openLightbox(c.images, 0);
-  });
-
-  // Slideshow image → lightbox at current slide
-  card.querySelector('.slideshow-img').addEventListener('click', () => {
     const c = getCarById(carId);
     if (c && c.images && c.images.length) openLightbox(c.images, parseInt(card.dataset.imgIdx || '0', 10));
   });
@@ -1030,35 +995,15 @@ function attachCardEvents(card, car) {
     if (label) label.textContent = card.classList.contains('expanded') ? 'Bezárás' : 'Részletek';
   });
 
-  // Slideshow
-  const img = card.querySelector('.slideshow-img');
-  const counter = card.querySelector('.slide-counter');
-
   function setImgIdx(idx) {
     const c = getCarById(carId);
     if (!c || !c.images.length) return;
     card.dataset.imgIdx = idx;
-    img.src = c.images[idx];
-    counter.textContent = `${idx + 1}/${c.images.length}`;
     const si = card.querySelector('.summary-img');
     const sc = card.querySelector('.summary-img-counter');
     if (si) si.src = c.images[idx];
     if (sc && c.images.length > 1) sc.textContent = `${idx + 1}/${c.images.length}`;
   }
-
-  card.querySelector('.slide-prev').addEventListener('click', (e) => {
-    e.stopPropagation();
-    const c = getCarById(carId);
-    if (!c || !c.images.length) return;
-    setImgIdx((parseInt(card.dataset.imgIdx || '0', 10) - 1 + c.images.length) % c.images.length);
-  });
-
-  card.querySelector('.slide-next').addEventListener('click', (e) => {
-    e.stopPropagation();
-    const c = getCarById(carId);
-    if (!c || !c.images.length) return;
-    setImgIdx((parseInt(card.dataset.imgIdx || '0', 10) + 1) % c.images.length);
-  });
 
   // Summary thumbnail: tap left/right half or swipe to navigate images
   const thumbWrap = card.querySelector('.summary-thumb-wrap');
@@ -1349,7 +1294,7 @@ function renderFilterBar() {
     for (const name of [...names].sort()) {
       const pill = document.createElement('button');
       pill.className = 'filter-pill' + (activePersonFilter === name ? ' active' : '');
-      pill.innerHTML = escHtml(name) + (activePersonFilter === name ? ' <span class="pill-x">×</span>' : '');
+      pill.innerHTML = escHtml(name + ' rangsora') + (activePersonFilter === name ? ' <span class="pill-x">×</span>' : '');
       pill.addEventListener('click', () => {
         activePersonFilter = activePersonFilter === name ? null : name;
         applyFilters(); renderFilterBar();
@@ -1751,39 +1696,7 @@ async function init() {
 
   // Rank info modal
   const rankInfoModal = document.getElementById('rankInfoModal');
-
-  function syncWeightInputs() {
-    document.getElementById('wPrice').value   = SCORE_WEIGHTS.price;
-    document.getElementById('wMileage').value = SCORE_WEIGHTS.mileage;
-    document.getElementById('wYear').value    = SCORE_WEIGHTS.year;
-    document.getElementById('wTop5').value    = SCORE_WEIGHTS.top5;
-    document.getElementById('wEquip').value   = SCORE_WEIGHTS.equipment;
-    updateWeightTotal();
-  }
-  function updateWeightTotal() {
-    const total = ['wPrice','wMileage','wYear','wTop5','wEquip']
-      .reduce((s, id) => s + (parseInt(document.getElementById(id).value) || 0), 0);
-    document.getElementById('rankWeightTotal').textContent = total;
-  }
-  let reRankTimer = null;
-  function applyWeightsLive() {
-    SCORE_WEIGHTS.price     = parseInt(document.getElementById('wPrice').value)   || 0;
-    SCORE_WEIGHTS.mileage   = parseInt(document.getElementById('wMileage').value) || 0;
-    SCORE_WEIGHTS.year      = parseInt(document.getElementById('wYear').value)    || 0;
-    SCORE_WEIGHTS.top5      = parseInt(document.getElementById('wTop5').value)    || 0;
-    SCORE_WEIGHTS.equipment = parseInt(document.getElementById('wEquip').value)   || 0;
-    localStorage.setItem(SCORE_WEIGHTS_KEY, JSON.stringify(SCORE_WEIGHTS));
-    refreshAutoRanks();
-    renderAll();
-  }
-  rankInfoModal.querySelectorAll('.rank-weight-input').forEach(inp => inp.addEventListener('input', () => {
-    updateWeightTotal();
-    clearTimeout(reRankTimer);
-    reRankTimer = setTimeout(applyWeightsLive, 400);
-  }));
-
   document.getElementById('btnRankInfo').addEventListener('click', () => {
-    syncWeightInputs();
     rankInfoModal.classList.add('visible');
   });
   document.getElementById('rankInfoClose').addEventListener('click', () => {
@@ -1791,17 +1704,6 @@ async function init() {
   });
   rankInfoModal.addEventListener('click', (e) => {
     if (e.target === rankInfoModal) rankInfoModal.classList.remove('visible');
-  });
-  document.getElementById('btnSaveWeights').addEventListener('click', () => {
-    SCORE_WEIGHTS.price     = parseInt(document.getElementById('wPrice').value)   || 0;
-    SCORE_WEIGHTS.mileage   = parseInt(document.getElementById('wMileage').value) || 0;
-    SCORE_WEIGHTS.year      = parseInt(document.getElementById('wYear').value)    || 0;
-    SCORE_WEIGHTS.top5      = parseInt(document.getElementById('wTop5').value)    || 0;
-    SCORE_WEIGHTS.equipment = parseInt(document.getElementById('wEquip').value)   || 0;
-    localStorage.setItem(SCORE_WEIGHTS_KEY, JSON.stringify(SCORE_WEIGHTS));
-    refreshAutoRanks();
-    renderAll();
-    rankInfoModal.classList.remove('visible');
   });
   document.getElementById('btnTop5Expand').addEventListener('click', (e) => {
     e.preventDefault();
