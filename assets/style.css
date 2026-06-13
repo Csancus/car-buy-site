@@ -653,14 +653,33 @@ body {
   .filter-chips-row {
     flex-wrap: wrap;
     overflow-x: visible;
-    gap: 5px;
+    gap: 4px;
     padding: 6px 0;
   }
+  /* Each section (Rendezés / Quick / Rangsorok) on its own line */
+  .filter-chips-row > .filter-row { width: 100%; flex-shrink: 1; }
+  .filter-pills { flex-wrap: wrap; }
   .filter-chips-divider { display: none; }
-  .filter-controls-row { gap: 5px; flex-wrap: wrap; align-items: center; }
+
+  /* Controls row */
+  .filter-controls-row { gap: 5px; flex-wrap: wrap; align-items: flex-start; padding: 6px 0; }
   .filter-controls-row > .filter-row { width: 100%; flex-shrink: 1; }
-  #filterRowAttr { flex-wrap: wrap; }
-  .filter-attr-select { max-width: calc(50% - 4px); min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+  /* Attr filter row: 2-col grid */
+  #filterRowAttr { flex-wrap: wrap; gap: 6px; align-items: flex-start; }
+  .status-filter-wrap { flex: 0 0 100%; }
+  .filter-controls-row .filter-section-label { flex-basis: 100%; }
+  .attr-filter-wrap { flex: 0 0 calc(50% - 3px); }
+  .attr-filter-btn,
+  .status-filter-btn { width: 100%; box-sizing: border-box; overflow: hidden; text-overflow: ellipsis; }
+  .filter-attr-select { width: 100%; max-width: 100%; box-sizing: border-box; }
+
+  /* Right-column dropdowns: open panel to the right edge */
+  #filterRowAttr > .attr-filter-wrap:nth-child(even) .attr-filter-panel { left: auto; right: 0; }
+
+  /* Cap panel width on narrow screens */
+  .attr-filter-panel,
+  .status-filter-panel { max-width: min(260px, calc(100vw - 24px)); }
   /* Search row: 2 lines on mobile */
   .filter-search-row { flex-wrap: wrap; gap: 6px; }
   .filter-search-row .search-input-wrap--hero { width: 100%; order: 1; }
@@ -1820,7 +1839,6 @@ body {
 .global-search-input::placeholder { color: var(--text-secondary); opacity: .6; }
 
 /* Manual add form */
-.manual-add-toggle-row { margin-top: 10px; }
 .btn-secondary {
   background: transparent;
   border: 1.5px solid var(--border);
