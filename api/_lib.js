@@ -90,6 +90,34 @@ function parseJsonLd(html) {
   return null;
 }
 
+function parseHighlightedInfo(html) {
+  const info = {};
+  const ids = ['manufacture-date', 'mileage', 'fuel', 'performance', 'condition'];
+  for (const tid of ids) {
+    const re = new RegExp(
+      `data-testid="highlighted-info-${tid}"[^>]*>[\\s\\S]{0,400}?` +
+      `<div[^>]*class="[^"]*small[^"]*"[^>]*>[^<]*<\\/div>\\s*<div[^>]*>([^<]*)<\\/div>`,
+      'i'
+    );
+    const m = html.match(re);
+    if (m) info[tid] = m[1].trim();
+  }
+  const trunkM = html.match(/Csomagtart[oó]<\/div>\s*<div[^>]*>([^<]+)<\/div>/i);
+  if (trunkM) info.trunk = trunkM[1].trim();
+  return info;
+}
+
+function parseSellerInfo(html) {
+  const locM = html.match(/data-testid="seller-location"[^>]*>([^<]+)/i);
+  const phoneM = html.match(/data-contact-value="([^"]+)"/i);
+  const companyM = html.match(/data-testid="seller-company-name"[^>]*>([^<]+)/i);
+  return {
+    location: locM ? locM[1].trim() : '',
+    phone: phoneM ? phoneM[1] : '',
+    name: companyM ? companyM[1].trim() : '',
+  };
+}
+
 function parseEquipment(html) {
   const items = new Set();
   const ulRe = /<ul[^>]*class="[^"]*\bgrid\b[^"]*"[^>]*>([\s\S]*?)<\/ul>/gi;
@@ -159,6 +187,8 @@ function parseCarPage(html, targetUrl) {
   const dl = parseDataLayer(html);
   const ld = parseJsonLd(html);
   const equipment = parseEquipment(html);
+  const info = parseHighlightedInfo(html);
+  const seller = parseSellerInfo(html);
   const images = ld?.image
     ? ld.image.map(img => typeof img === 'string' ? img : img.url).filter(Boolean)
     : [];
@@ -169,6 +199,7 @@ function parseCarPage(html, targetUrl) {
     brand: dl?.brand || '',
     model: dl?.model || '',
     year: dl?.year || null,
+    manufactureDate: info['manufacture-date'] || (dl?.year ? String(dl.year) : null),
     price: ld?.offers?.price ?? dl?.price ?? null,
     mileage: dl?.mileage || null,
     fuel: dl?.fuel_type || '',
@@ -176,7 +207,12 @@ function parseCarPage(html, targetUrl) {
     condition: dl?.condition_type || '',
     bodyType: dl?.car_body_type || '',
     color: ld?.color || '',
-    seller: ld?.offers?.seller?.name || '',
+    performance: info['performance'] || '',
+    trunkVolume: info['trunk'] || '',
+    sellerType: dl?.seller || '',
+    sellerName: seller.name || ld?.offers?.seller?.name || '',
+    sellerLocation: seller.location,
+    sellerPhone: seller.phone,
     description: ld?.description || '',
     images,
     equipment,

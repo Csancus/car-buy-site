@@ -421,7 +421,38 @@ function updateCard(card, car) {
 }
 
 function populateCard(card, car) {
-  // Slideshow
+  // Summary thumbnail
+  const summaryImg = card.querySelector('.summary-img');
+  const thumbPh = card.querySelector('.thumb-placeholder');
+  if (car.images && car.images.length > 0) {
+    summaryImg.src = car.images[0];
+    summaryImg.alt = car.name;
+    if (thumbPh) thumbPh.style.display = 'none';
+  } else {
+    summaryImg.removeAttribute('src');
+    if (thumbPh) thumbPh.style.display = 'flex';
+  }
+
+  const btnListing = card.querySelector('.btn-listing');
+  if (btnListing) btnListing.href = car.url;
+
+  // Name + price
+  card.querySelector('.car-name').textContent = car.name || 'Ismeretlen';
+  card.querySelector('.car-price').textContent = car.price ? formatPrice(car.price) : '—';
+
+  // Summary spec badges
+  const setSum = (cls, val) => {
+    const el = card.querySelector(cls);
+    if (!el) return;
+    el.textContent = val || '';
+    el.style.display = val ? '' : 'none';
+  };
+  setSum('.sum-year', car.year ? `📅 ${car.year}` : '');
+  setSum('.sum-km', car.mileage != null ? `🛣 ${formatMileage(car.mileage)}` : '');
+  setSum('.sum-fuel', car.fuel ? `⛽ ${car.fuel}` : '');
+  setSum('.sum-condition', car.condition || '');
+
+  // Detail slideshow
   const img = card.querySelector('.slideshow-img');
   const counter = card.querySelector('.slide-counter');
   const slidePrev = card.querySelector('.slide-prev');
@@ -429,46 +460,42 @@ function populateCard(card, car) {
   const slideshowEl = card.querySelector('.card-slideshow');
 
   let currentIdx = parseInt(card.dataset.imgIdx || '0', 10);
-  if (currentIdx >= car.images.length) currentIdx = 0;
+  if (currentIdx >= (car.images || []).length) currentIdx = 0;
   card.dataset.imgIdx = currentIdx;
 
-  if (car.images.length > 0) {
+  if (car.images && car.images.length > 0) {
     img.src = car.images[currentIdx];
     img.alt = car.name;
-    counter.textContent = `${currentIdx + 1}/${car.images.length}`;
     img.style.display = 'block';
-    // Remove placeholder if exists
-    const ph = slideshowEl.querySelector('.no-image-placeholder');
+    const ph = slideshowEl && slideshowEl.querySelector('.no-image-placeholder');
     if (ph) ph.remove();
+    if (counter) counter.textContent = `${currentIdx + 1}/${car.images.length}`;
   } else {
     img.style.display = 'none';
-    if (!slideshowEl.querySelector('.no-image-placeholder')) {
+    if (slideshowEl && !slideshowEl.querySelector('.no-image-placeholder')) {
       const ph = document.createElement('div');
       ph.className = 'no-image-placeholder';
       ph.textContent = '🚗';
-      slideshowEl.querySelector('.slideshow-images').appendChild(ph);
+      const si = slideshowEl.querySelector('.slideshow-images');
+      if (si) si.appendChild(ph);
     }
-    counter.textContent = '0/0';
+    if (counter) counter.textContent = '0/0';
   }
 
-  slidePrev.style.display = car.images.length > 1 ? 'flex' : 'none';
-  slideNext.style.display = car.images.length > 1 ? 'flex' : 'none';
+  if (slidePrev) slidePrev.style.display = (car.images && car.images.length > 1) ? 'flex' : 'none';
+  if (slideNext) slideNext.style.display = (car.images && car.images.length > 1) ? 'flex' : 'none';
 
-  // Link
   const link = card.querySelector('.card-link-badge');
-  link.href = car.url;
+  if (link) link.href = car.url;
 
-  // Name
-  card.querySelector('.car-name').textContent = car.name || 'Ismeretlen';
-
-  // Price
-  card.querySelector('.car-price').textContent = car.price ? formatPrice(car.price) : '—';
-
-  // Specs
-  card.querySelector('.spec-year').textContent = car.year ? `📅 ${car.year}` : '';
-  card.querySelector('.spec-mileage').textContent = car.mileage != null ? `🛣 ${formatMileage(car.mileage)}` : '';
-  card.querySelector('.spec-fuel').textContent = car.fuel ? `⛽ ${car.fuel}` : '';
-  card.querySelector('.spec-transmission').textContent = car.transmission ? `⚙️ ${car.transmission}` : '';
+  // Specs strip
+  const setSpec = (cls, val) => { const el = card.querySelector(cls); if (el) el.textContent = val || '—'; };
+  setSpec('.sval-year', car.manufactureDate || (car.year ? String(car.year) : null));
+  setSpec('.sval-km', car.mileage != null ? formatMileage(car.mileage) : null);
+  setSpec('.sval-fuel', car.fuel);
+  setSpec('.sval-perf', car.performance);
+  setSpec('.sval-cond', car.condition);
+  setSpec('.sval-trans', car.transmission);
 
   // Top 5
   const top5El = card.querySelector('.top5-badges');
@@ -489,7 +516,6 @@ function populateCard(card, car) {
   const eqFull = card.querySelector('.equipment-full');
   eqPreview.innerHTML = '';
   eqFull.innerHTML = '';
-
   const eq = car.equipment || [];
   const previewCount = 6;
   for (let i = 0; i < Math.min(previewCount, eq.length); i++) {
@@ -501,12 +527,10 @@ function populateCard(card, car) {
   if (eq.length > previewCount) {
     const more = document.createElement('span');
     more.className = 'equip-tag';
-    more.style.background = '#f1f5f9';
-    more.style.color = '#64748b';
+    more.style.cssText = 'background:var(--bg-elevated);color:var(--text-dim)';
     more.textContent = `+${eq.length - previewCount} további`;
     eqPreview.appendChild(more);
   }
-
   for (const item of eq) {
     const li = document.createElement('li');
     li.textContent = item;
@@ -518,6 +542,19 @@ function populateCard(card, car) {
   descEl.textContent = car.description || 'Nincs leírás.';
   descEl.classList.remove('expanded');
   descEl.style.cursor = car.description && car.description.length > 200 ? 'pointer' : 'default';
+
+  // Seller
+  const sellerTypeEl = card.querySelector('.seller-type-val');
+  if (sellerTypeEl) sellerTypeEl.textContent = car.sellerType === 'private' ? 'Magánszemély' : (car.sellerName || car.sellerType || '—');
+  const sellerLocEl = card.querySelector('.seller-location');
+  if (sellerLocEl) sellerLocEl.textContent = car.sellerLocation || '—';
+  const phoneEl = card.querySelector('.seller-phone');
+  if (phoneEl) {
+    const phone = car.sellerPhone || '';
+    phoneEl.textContent = phone || 'Nem elérhető';
+    phoneEl.href = phone ? `tel:${phone}` : '#';
+    phoneEl.style.color = phone ? '' : 'var(--text-dim)';
+  }
 
   // Comments
   renderComments(card, car);
@@ -549,6 +586,13 @@ function escHtml(str) {
 function attachCardEvents(card, car) {
   const carId = car.id;
 
+  // Expand / collapse
+  card.querySelector('.btn-expand').addEventListener('click', () => {
+    card.classList.toggle('expanded');
+    const label = card.querySelector('.btn-expand-label');
+    if (label) label.textContent = card.classList.contains('expanded') ? 'Bezárás' : 'Részletek';
+  });
+
   // Slideshow
   const img = card.querySelector('.slideshow-img');
   const counter = card.querySelector('.slide-counter');
@@ -556,7 +600,7 @@ function attachCardEvents(card, car) {
   card.querySelector('.slide-prev').addEventListener('click', (e) => {
     e.stopPropagation();
     const c = getCarById(carId);
-    if (!c || c.images.length === 0) return;
+    if (!c || !c.images.length) return;
     let idx = parseInt(card.dataset.imgIdx || '0', 10);
     idx = (idx - 1 + c.images.length) % c.images.length;
     card.dataset.imgIdx = idx;
@@ -567,7 +611,7 @@ function attachCardEvents(card, car) {
   card.querySelector('.slide-next').addEventListener('click', (e) => {
     e.stopPropagation();
     const c = getCarById(carId);
-    if (!c || c.images.length === 0) return;
+    if (!c || !c.images.length) return;
     let idx = parseInt(card.dataset.imgIdx || '0', 10);
     idx = (idx + 1) % c.images.length;
     card.dataset.imgIdx = idx;
@@ -978,6 +1022,18 @@ async function init() {
       e.target.value = ''; // reset so same file can be re-imported
     }
   });
+
+  // View toggle (grid / list)
+  const carsGrid = document.getElementById('carsGrid');
+  let viewMode = localStorage.getItem('carbuy_view') || 'grid';
+  function applyViewMode() {
+    carsGrid.classList.toggle('view-list', viewMode === 'list');
+    document.getElementById('btnViewGrid').classList.toggle('btn-active', viewMode === 'grid');
+    document.getElementById('btnViewList').classList.toggle('btn-active', viewMode === 'list');
+  }
+  document.getElementById('btnViewGrid').addEventListener('click', () => { viewMode = 'grid'; localStorage.setItem('carbuy_view', viewMode); applyViewMode(); });
+  document.getElementById('btnViewList').addEventListener('click', () => { viewMode = 'list'; localStorage.setItem('carbuy_view', viewMode); applyViewMode(); });
+  applyViewMode();
 
   // Theme toggle
   document.getElementById('btnTheme').addEventListener('click', toggleTheme);

@@ -647,3 +647,139 @@ body {
 }
 
 .sortable-chosen { cursor: grabbing !important; }
+
+/* ── View toggle ────────────────────────────────────────── */
+.view-toggle-group { display: flex; gap: 2px; }
+.btn-icon-only.btn-active { background: var(--primary) !important; color: #fff !important; border-color: var(--primary) !important; }
+
+/* ── Card: collapsed summary ────────────────────────────── */
+.card-summary { display: flex; }
+
+/* Grid view — vertical stack */
+.cars-grid:not(.view-list) .card-summary { flex-direction: column; }
+.cars-grid:not(.view-list) .summary-thumb-wrap {
+  width: 100%;
+  aspect-ratio: 16/9;
+  overflow: hidden;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  position: relative;
+}
+.cars-grid:not(.view-list) .summary-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.cars-grid:not(.view-list) .summary-body { padding: 14px 16px 12px; }
+
+/* List view — horizontal */
+.cars-grid.view-list { display: flex; flex-direction: column; gap: 8px; }
+.view-list .car-card { border-radius: var(--radius); }
+.view-list .car-card:hover { transform: none; }
+.view-list .card-summary { flex-direction: row; gap: 14px; padding: 12px 14px; align-items: flex-start; }
+.view-list .summary-thumb-wrap {
+  width: 150px;
+  height: 94px;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--bg-elevated);
+  position: relative;
+}
+.view-list .summary-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.view-list .summary-body { flex: 1; min-width: 0; }
+.view-list .car-price { font-size: 1.2rem; }
+
+/* Thumbnail placeholder */
+.thumb-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-elevated);
+}
+.summary-img:not([src=""]) ~ .thumb-placeholder { display: none; }
+
+/* Summary elements */
+.summary-specs { display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 0 8px; }
+.sum-badge {
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 2px 9px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  white-space: nowrap;
+}
+.sum-badge:empty { display: none; }
+
+.summary-footer { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+.btn-listing {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.775rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-decoration: none;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  transition: background var(--transition), color var(--transition), border-color var(--transition);
+  white-space: nowrap;
+  font-family: inherit;
+}
+.btn-listing:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+.btn-expand {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.775rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition), border-color var(--transition);
+  font-family: inherit;
+  white-space: nowrap;
+}
+.btn-expand:hover { background: var(--bg-elevated); color: var(--text); border-color: var(--border-mid); }
+.car-card.expanded .btn-expand { background: var(--bg-elevated); color: var(--text); border-color: var(--border-mid); }
+.expand-chevron { transition: transform .2s ease; flex-shrink: 0; }
+.car-card.expanded .expand-chevron { transform: rotate(180deg); }
+
+/* ── Card: expanded details ─────────────────────────────── */
+.card-details { display: none; }
+.car-card.expanded .card-details { display: block; border-top: 1px solid var(--border); }
+
+/* ── Specs strip ────────────────────────────────────────── */
+.specs-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin: 14px 0 18px;
+}
+.spec-item {
+  padding: 10px 12px;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.spec-item:nth-child(3n) { border-right: none; }
+.spec-item:nth-last-child(-n+3) { border-bottom: none; }
+.spec-label { font-size: 0.67rem; color: var(--text-muted); margin-bottom: 3px; }
+.spec-value { font-size: 0.875rem; font-weight: 600; color: var(--text); }
+
+/* ── Seller section ─────────────────────────────────────── */
+.seller-section { margin-bottom: 16px; }
+.seller-grid { display: flex; flex-direction: column; gap: 6px; }
+.seller-row { display: flex; align-items: baseline; gap: 8px; font-size: 0.825rem; }
+.seller-label { color: var(--text-dim); font-size: 0.72rem; min-width: 62px; flex-shrink: 0; }
+.seller-type-val, .seller-location { color: var(--text); }
+.seller-phone { color: var(--primary); text-decoration: none; font-weight: 500; }
+.seller-phone:hover { text-decoration: underline; }

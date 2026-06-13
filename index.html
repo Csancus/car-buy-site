@@ -40,6 +40,14 @@
           Import
           <input type="file" id="fileImport" accept=".json" style="display:none" />
         </label>
+        <div class="view-toggle-group">
+          <button id="btnViewGrid" class="btn btn-icon-only btn-active" title="Rácsnézet">
+            <svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          </button>
+          <button id="btnViewList" class="btn btn-icon-only" title="Listanézet">
+            <svg class="ic" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          </button>
+        </div>
         <button id="btnTheme" class="btn btn-icon-only" title="Témaváltás">
           <svg class="ic theme-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
           <svg class="ic theme-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
@@ -106,90 +114,146 @@
   <!-- Card template -->
   <template id="cardTemplate">
     <article class="car-card" data-id="">
-      <div class="card-slideshow">
-        <div class="slideshow-images">
-          <img class="slideshow-img" src="" alt="" loading="lazy" />
-        </div>
-        <button class="slide-btn slide-prev">
-          <svg class="ic" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
-        </button>
-        <button class="slide-btn slide-next">
-          <svg class="ic" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
-        </button>
-        <span class="slide-counter">1/1</span>
-        <a class="card-link-badge" href="#" target="_blank" rel="noopener">
-          <svg class="ic" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-          Hirdetés
-        </a>
-      </div>
 
-      <div class="card-body">
-        <div class="card-header-row">
-          <h2 class="car-name"></h2>
-          <div class="card-order-btns">
-            <button class="btn-order btn-up" title="Feljebb">
-              <svg class="ic" viewBox="0 0 24 24"><path d="m18 15-6-6-6 6"/></svg>
-            </button>
-            <button class="btn-order btn-down" title="Lejjebb">
-              <svg class="ic" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
-            </button>
-            <button class="btn-delete" title="Törlés">
-              <svg class="ic" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+      <!-- Summary — always visible, collapsed by default -->
+      <div class="card-summary">
+        <div class="summary-thumb-wrap">
+          <img class="summary-img" src="" alt="" loading="lazy" />
+          <div class="thumb-placeholder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:32px;height:32px;opacity:.3">
+              <path d="M5 17H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1"/><path d="M19 7h1a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2"/>
+              <path d="M5 7h14l1 6H4z"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="16.5" cy="17.5" r="1.5"/>
+            </svg>
+          </div>
+        </div>
+        <div class="summary-body">
+          <div class="card-header-row">
+            <h2 class="car-name"></h2>
+            <div class="card-order-btns">
+              <button class="btn-order btn-up" title="Feljebb">
+                <svg class="ic" viewBox="0 0 24 24"><path d="m18 15-6-6-6 6"/></svg>
+              </button>
+              <button class="btn-order btn-down" title="Lejjebb">
+                <svg class="ic" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
+              <button class="btn-delete" title="Törlés">
+                <svg class="ic" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="car-price"></div>
+          <div class="summary-specs">
+            <span class="sum-badge sum-year"></span>
+            <span class="sum-badge sum-km"></span>
+            <span class="sum-badge sum-fuel"></span>
+            <span class="sum-badge sum-condition"></span>
+          </div>
+          <div class="summary-footer">
+            <a class="btn-listing" href="#" target="_blank" rel="noopener">
+              <svg class="ic" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Hirdetés
+            </a>
+            <button class="btn-expand">
+              <svg class="ic expand-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+              <span class="btn-expand-label">Részletek</span>
             </button>
           </div>
         </div>
+      </div>
 
-        <div class="car-price"></div>
-
-        <div class="car-specs">
-          <span class="spec-badge spec-year"></span>
-          <span class="spec-badge spec-mileage"></span>
-          <span class="spec-badge spec-fuel"></span>
-          <span class="spec-badge spec-transmission"></span>
+      <!-- Details — hidden until expanded -->
+      <div class="card-details">
+        <div class="card-slideshow">
+          <div class="slideshow-images">
+            <img class="slideshow-img" src="" alt="" loading="lazy" />
+          </div>
+          <button class="slide-btn slide-prev">
+            <svg class="ic" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
+          </button>
+          <button class="slide-btn slide-next">
+            <svg class="ic" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+          </button>
+          <span class="slide-counter">1/1</span>
+          <a class="card-link-badge" href="#" target="_blank" rel="noopener">
+            <svg class="ic" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Hirdetés
+          </a>
         </div>
 
-        <div class="top5-section">
-          <h3 class="section-title">
-            <svg class="ic-sec" viewBox="0 0 24 24"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>
-            Top 5 kiemelés
-          </h3>
-          <div class="top5-badges"></div>
-        </div>
+        <div class="card-body">
+          <div class="specs-strip">
+            <div class="spec-item"><div class="spec-label">Évjárat</div><div class="spec-value sval-year"></div></div>
+            <div class="spec-item"><div class="spec-label">Km. óra állás</div><div class="spec-value sval-km"></div></div>
+            <div class="spec-item"><div class="spec-label">Üzemanyag</div><div class="spec-value sval-fuel"></div></div>
+            <div class="spec-item"><div class="spec-label">Teljesítmény</div><div class="spec-value sval-perf"></div></div>
+            <div class="spec-item"><div class="spec-label">Állapot</div><div class="spec-value sval-cond"></div></div>
+            <div class="spec-item"><div class="spec-label">Váltó</div><div class="spec-value sval-trans"></div></div>
+          </div>
 
-        <div class="equipment-section">
-          <h3 class="section-title">
-            <svg class="ic-sec" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-            Felszereltség
-          </h3>
-          <div class="equipment-preview"></div>
-          <button class="btn-toggle-equip">Összes mutatása</button>
-          <ul class="equipment-full" style="display:none"></ul>
-        </div>
+          <div class="top5-section">
+            <h3 class="section-title">
+              <svg class="ic-sec" viewBox="0 0 24 24"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>
+              Top 5 kiemelés
+            </h3>
+            <div class="top5-badges"></div>
+          </div>
 
-        <div class="description-section">
-          <h3 class="section-title">
-            <svg class="ic-sec" viewBox="0 0 24 24"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
-            Leírás
-          </h3>
-          <p class="car-description"></p>
-        </div>
+          <div class="equipment-section">
+            <h3 class="section-title">
+              <svg class="ic-sec" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+              Felszereltség
+            </h3>
+            <div class="equipment-preview"></div>
+            <button class="btn-toggle-equip">Összes mutatása</button>
+            <ul class="equipment-full" style="display:none"></ul>
+          </div>
 
-        <div class="comments-section">
-          <h3 class="section-title">
-            <svg class="ic-sec" viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
-            Megjegyzések
-          </h3>
-          <ul class="comments-list"></ul>
-          <form class="comment-form">
-            <div class="comment-inputs">
-              <input type="text" class="comment-input-author" placeholder="Neved" maxlength="50" required />
-              <input type="text" class="comment-input-text" placeholder="Megjegyzés..." maxlength="500" required />
+          <div class="description-section">
+            <h3 class="section-title">
+              <svg class="ic-sec" viewBox="0 0 24 24"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+              Leírás
+            </h3>
+            <p class="car-description"></p>
+          </div>
+
+          <div class="seller-section">
+            <h3 class="section-title">
+              <svg class="ic-sec" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Eladó adatai
+            </h3>
+            <div class="seller-grid">
+              <div class="seller-row">
+                <span class="seller-label">Típus</span>
+                <span class="seller-type-val"></span>
+              </div>
+              <div class="seller-row">
+                <span class="seller-label">Helyszín</span>
+                <span class="seller-location"></span>
+              </div>
+              <div class="seller-row">
+                <span class="seller-label">Telefon</span>
+                <a class="seller-phone" href="#">—</a>
+              </div>
             </div>
-            <button type="submit" class="btn btn-sm btn-primary">
-              <svg class="ic" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
-              Hozzáadás
-            </button>
-          </form>
+          </div>
+
+          <div class="comments-section">
+            <h3 class="section-title">
+              <svg class="ic-sec" viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+              Megjegyzések
+            </h3>
+            <ul class="comments-list"></ul>
+            <form class="comment-form">
+              <div class="comment-inputs">
+                <input type="text" class="comment-input-author" placeholder="Neved" maxlength="50" required />
+                <input type="text" class="comment-input-text" placeholder="Megjegyzés..." maxlength="500" required />
+              </div>
+              <button type="submit" class="btn btn-sm btn-primary">
+                <svg class="ic" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+                Hozzáadás
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     </article>
