@@ -658,8 +658,9 @@ body {
   }
   .filter-chips-divider { display: none; }
   .filter-controls-row { gap: 5px; flex-wrap: wrap; align-items: center; }
-  #filterRowAttr { display: flex; flex-wrap: wrap; gap: 5px; }
-  .filter-attr-select { max-width: 130px; overflow: hidden; text-overflow: ellipsis; }
+  .filter-controls-row > .filter-row { width: 100%; flex-shrink: 1; }
+  #filterRowAttr { flex-wrap: wrap; }
+  .filter-attr-select { max-width: calc(50% - 4px); min-width: 0; overflow: hidden; text-overflow: ellipsis; }
   /* Search row: 2 lines on mobile */
   .filter-search-row { flex-wrap: wrap; gap: 6px; }
   .filter-search-row .search-input-wrap--hero { width: 100%; order: 1; }
