@@ -723,8 +723,8 @@ body {
 .view-list .car-card:hover { transform: none; }
 .view-list .card-summary { flex-direction: row; gap: 14px; padding: 12px 14px; align-items: flex-start; }
 .view-list .summary-thumb-wrap {
-  width: 150px;
-  height: 94px;
+  width: 220px;
+  height: 140px;
   flex-shrink: 0;
   border-radius: var(--radius-sm);
   overflow: hidden;
