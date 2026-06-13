@@ -116,9 +116,19 @@ const SCORE_WEIGHTS = { price: 30, mileage: 25, year: 20, top5: 15, equipment: 1
 
 const QUICK_FILTERS = [
   {
+    id: 'phev',
+    label: '🔌 PHEV',
+    test: car => { const f = (car.fuel || '').toLowerCase(); return f.includes('plug-in') || f.includes('plugin'); },
+  },
+  {
     id: 'hybrid',
     label: '⚡ Hybrid',
-    test: car => { const f = (car.fuel || '').toLowerCase(); return f.includes('hibrid') || f.includes('elektromos'); },
+    test: car => { const f = (car.fuel || '').toLowerCase(); return f.includes('hibrid') && !f.includes('plug-in') && !f.includes('plugin'); },
+  },
+  {
+    id: 'electric',
+    label: '⚡ Elektromos',
+    test: car => { const f = (car.fuel || '').toLowerCase(); return f.includes('elektromos') && !f.includes('hibrid'); },
   },
   {
     id: 'adj_seat',
@@ -556,8 +566,12 @@ function computeTop5(car) {
   }
 
   // Special rules (high priority)
-  if (fuel.includes('hibrid') || fuel.includes('elektromos')) {
-    add('🔌 Plugin Hibrid / Elektromos hajtás', 10);
+  if (fuel.includes('plug-in') || fuel.includes('plugin')) {
+    add('🔌 PHEV (Plugin Hibrid)', 10);
+  } else if (fuel.includes('hibrid')) {
+    add('⚡ Hybrid hajtás', 9);
+  } else if (fuel.includes('elektromos')) {
+    add('⚡ Teljesen elektromos', 10);
   }
   if (car.mileage !== null && car.mileage < 30000) {
     add('📉 Alacsony km-óraállás', 9);
