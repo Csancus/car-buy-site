@@ -1588,6 +1588,18 @@ function buildCompareTable() {
   // Rows definition
   const rows = [
     {
+      label: 'Rangsor pontszám',
+      getValue: c => Math.round(computeAutoScore(c) * 10) / 10,
+      display: c => computeAutoScore(c).toFixed(1) + ' pt',
+      best: 'max',
+    },
+    {
+      label: 'Rangsor helyezés',
+      getValue: c => (c.order != null ? c.order + 1 : 999),
+      display: c => c.order != null ? '#' + (c.order + 1) : '—',
+      best: 'min',
+    },
+    {
       label: 'Ár',
       getValue: c => c.price,
       display: c => c.price ? formatPrice(c.price) : '—',
@@ -1634,6 +1646,23 @@ function buildCompareTable() {
       label: 'Eladó',
       getValue: null,
       display: c => c.seller || '—',
+    },
+    {
+      label: 'Fogyasztás',
+      getValue: c => c.consumption != null ? c.consumption : null,
+      display: c => c.consumption != null ? c.consumption + ' l/100km' : '—',
+      best: 'min',
+    },
+    {
+      label: 'Csomagtér',
+      getValue: c => c.trunkSize != null ? c.trunkSize : null,
+      display: c => c.trunkSize != null ? c.trunkSize + ' l' : '—',
+      best: 'max',
+    },
+    {
+      label: 'Helyszín',
+      getValue: null,
+      display: c => c.sellerLocation || '—',
     },
   ];
 
