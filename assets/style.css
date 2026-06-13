@@ -694,7 +694,17 @@ body {
 .btn-icon-only.btn-active { background: var(--primary) !important; color: #fff !important; border-color: var(--primary) !important; }
 
 /* ── Card: collapsed summary ────────────────────────────── */
-.card-summary { display: flex; }
+.card-summary { display: flex; position: relative; }
+
+.rank-badge-wrap {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
 
 /* Grid view — vertical stack */
 .cars-grid:not(.view-list) .card-summary { flex-direction: column; }
