@@ -711,15 +711,17 @@ function renderAll() {
   for (const car of getDisplayCars()) {
     let cardEl = grid.querySelector(`.car-card[data-id="${car.id}"]`);
     if (!cardEl) {
-      cardEl = buildCard(car);
+      try { cardEl = buildCard(car); } catch(err) { console.error('buildCard error', err, car); continue; }
     } else {
-      updateCard(cardEl, car);
+      try { updateCard(cardEl, car); } catch(err) { console.error('updateCard error', err, car); }
     }
-    fragment.appendChild(cardEl);
+    if (cardEl) fragment.appendChild(cardEl);
   }
   grid.appendChild(fragment);
 
   applyFilters();
+  const anyVisible = [...grid.querySelectorAll('.car-card')].some(el => el.style.display !== 'none');
+  empty.style.display = anyVisible ? 'none' : 'block';
   renderFilterBar();
 }
 
@@ -761,7 +763,14 @@ function populateCard(card, car) {
   }
 
   const btnListing = card.querySelector('.btn-listing');
-  if (btnListing) btnListing.href = car.url;
+  if (btnListing) {
+    btnListing.href = car.url || '#';
+    const isNew = car.carConditionLabel === 'new';
+    const svgEl = btnListing.querySelector('svg');
+    btnListing.textContent = isNew ? 'Árlista' : 'Hirdetés';
+    if (svgEl) btnListing.prepend(svgEl);
+    btnListing.style.display = (isNew && !car.url) ? 'none' : '';
+  }
 
   // Auto rank badge + score info btn
   const rankBadge = card.querySelector('.auto-rank-badge');
@@ -961,6 +970,7 @@ function renderRankings(card, car) {
 
 function renderComments(card, car) {
   const list = card.querySelector('.comments-list');
+  if (!list) return;
   list.innerHTML = '';
   for (const c of (car.comments || [])) {
     const li = document.createElement('li');
@@ -1792,17 +1802,20 @@ function parseManualCarText(name, text) {
     order: 0,
     manual: true,
   };
+  car.top5 = computeTop5(car);
+  return car;
 }
 
 async function handleManualAdd() {
-  const nameEl   = document.getElementById('manualName');
-  const textEl   = document.getElementById('manualText');
-  const priceEl  = document.getElementById('manualPrice');
-  const trunkEl  = document.getElementById('manualTrunk');
-  const errorEl  = document.getElementById('manualError');
-  const btnText  = document.getElementById('btnManualAddText');
-  const spinner  = document.getElementById('btnManualAddSpinner');
-  const btn      = document.getElementById('btnManualAdd');
+  const nameEl      = document.getElementById('manualName');
+  const textEl      = document.getElementById('manualText');
+  const priceEl     = document.getElementById('manualPrice');
+  const trunkEl     = document.getElementById('manualTrunk');
+  const listingUrlEl = document.getElementById('manualListingUrl');
+  const errorEl     = document.getElementById('manualError');
+  const btnText     = document.getElementById('btnManualAddText');
+  const spinner     = document.getElementById('btnManualAddSpinner');
+  const btn         = document.getElementById('btnManualAdd');
 
   const name = nameEl.value.trim();
   const text = textEl.value.trim();
@@ -1815,6 +1828,7 @@ async function handleManualAdd() {
   // Explicit fields override auto-parsed values
   if (priceEl.value) carData.price = parseInt(priceEl.value.replace(/\D/g, ''), 10) || carData.price;
   if (trunkEl.value) carData.trunkVolume = trunkEl.value.trim() + ' l';
+  if (listingUrlEl && listingUrlEl.value.trim()) carData.url = listingUrlEl.value.trim();
   if (manualImageDataUrls.length > 0) carData.images = [...manualImageDataUrls];
 
   btnText.style.display = 'none';
@@ -1837,6 +1851,7 @@ async function handleManualAdd() {
     textEl.value = '';
     if (priceEl) priceEl.value = '';
     if (trunkEl) trunkEl.value = '';
+    if (listingUrlEl) listingUrlEl.value = '';
     manualImageDataUrls = [];
     renderManualImgPreview();
     document.getElementById('manualForm').style.display = 'none';
