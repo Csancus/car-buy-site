@@ -135,11 +135,21 @@
   <!-- Filter bar -->
   <div class="filter-bar" id="filterBar" style="display:none">
     <div class="filter-bar-inner">
-      <!-- Keresősor -->
+      <!-- Keresősor + gombok -->
       <div id="searchBarWrap" class="filter-search-row" style="display:none">
         <div class="search-input-wrap search-input-wrap--hero">
           <svg class="ic search-ic search-ic--hero" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
           <input type="search" id="globalSearch" class="global-search-input global-search-input--hero" placeholder="Keresés névben, márkában, felszereltségben..." autocomplete="off" />
+        </div>
+        <div class="filter-rank-actions">
+          <button class="btn btn-sm btn-outline" id="btnOpenPrm">
+            <svg class="ic" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+            Saját rangsor
+          </button>
+          <button class="btn-rank-info btn btn-sm btn-outline" id="btnRankInfo" title="Automatikus rangsor módszertana">
+            <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+            Rangsor
+          </button>
         </div>
       </div>
       <!-- Sor 1: rendezés + gyorsszűrők + személyek -->
@@ -151,19 +161,9 @@
           <div class="filter-pills" id="filterPills"></div>
         </div>
       </div>
-      <!-- Sor 2: attribútum szűrők + Rangsor gombok -->
+      <!-- Sor 2: attribútum szűrők -->
       <div class="filter-controls-row">
         <div class="filter-row" id="filterRowAttr"></div>
-        <div class="filter-rank-actions">
-          <button class="btn btn-sm btn-outline" id="btnOpenPrm">
-            <svg class="ic" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-            Saját rangsor
-          </button>
-          <button class="btn-rank-info btn btn-sm btn-outline" id="btnRankInfo" title="Automatikus rangsor módszertana">
-            <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-            Rangsor
-          </button>
-        </div>
       </div>
     </div>
   </div>
