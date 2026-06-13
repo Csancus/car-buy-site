@@ -70,7 +70,26 @@
       </div>
       <div id="manualForm" class="manual-form" style="display:none">
         <input type="text" id="manualName" class="manual-name-input" placeholder="Autó neve (pl. Toyota RAV4 2.5 PHEV, 2023)" autocomplete="off" />
-        <textarea id="manualText" class="manual-text-input" rows="6" placeholder="Illeszd be a leírást: ár, évjárat, km, üzemanyag, váltó, felszereltség sorai..."></textarea>
+        <div class="manual-fields-row">
+          <div class="manual-field-group">
+            <label class="manual-field-label" for="manualPrice">Ár (Ft)</label>
+            <input type="number" id="manualPrice" class="manual-field-input" placeholder="pl. 7 900 000" min="0" step="50000" />
+          </div>
+          <div class="manual-field-group">
+            <label class="manual-field-label" for="manualTrunk">Csomagtér (liter)</label>
+            <input type="number" id="manualTrunk" class="manual-field-input" placeholder="pl. 437" min="0" max="9999" />
+          </div>
+        </div>
+        <textarea id="manualText" class="manual-text-input" rows="5" placeholder="Illeszd be a leírást: évjárat, km, üzemanyag, váltó, felszereltség sorai..."></textarea>
+        <div class="manual-img-upload-area">
+          <label class="manual-img-upload-btn" for="manualImages">
+            <svg class="ic" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Képek feltöltése
+          </label>
+          <input type="file" id="manualImages" multiple accept="image/*" style="display:none" />
+          <span class="manual-img-hint">Max 800px, JPEG tömörítés</span>
+        </div>
+        <div id="manualImgPreview" class="manual-img-preview"></div>
         <div class="manual-form-actions">
           <button id="btnManualAdd" class="btn btn-primary" type="button">
             <span id="btnManualAddText">Hozzáadás</span>

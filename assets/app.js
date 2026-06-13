@@ -114,6 +114,7 @@ let activeFeatureFilters = new Set();
 let activeSearch = '';
 let activeStatusFilters = new Set(['active', 'top']);
 let statusFilterOpen = false;
+let manualImageDataUrls = [];
 
 const SCORE_WEIGHTS = { price: 30, mileage: 25, year: 20, top5: 15, equipment: 10, location: 5 };
 
@@ -1662,6 +1663,51 @@ function buildCompareTable() {
 // ============================================================
 // Manual Car Add
 // ============================================================
+function compressImage(file) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 800;
+        let w = img.width, h = img.height;
+        if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+        else if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', 0.72));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderManualImgPreview() {
+  const preview = document.getElementById('manualImgPreview');
+  if (!preview) return;
+  preview.innerHTML = '';
+  manualImageDataUrls.forEach((url, i) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'manual-img-thumb';
+    const img = document.createElement('img');
+    img.src = url;
+    img.alt = `Kép ${i + 1}`;
+    const btn = document.createElement('button');
+    btn.className = 'manual-img-remove';
+    btn.type = 'button';
+    btn.textContent = '×';
+    btn.addEventListener('click', () => {
+      manualImageDataUrls.splice(i, 1);
+      renderManualImgPreview();
+    });
+    wrap.appendChild(img);
+    wrap.appendChild(btn);
+    preview.appendChild(wrap);
+  });
+}
+
 function parseManualCarText(name, text) {
   const lower = text.toLowerCase();
 
@@ -1736,12 +1782,14 @@ function parseManualCarText(name, text) {
 }
 
 async function handleManualAdd() {
-  const nameEl = document.getElementById('manualName');
-  const textEl = document.getElementById('manualText');
-  const errorEl = document.getElementById('manualError');
-  const btnText = document.getElementById('btnManualAddText');
-  const spinner = document.getElementById('btnManualAddSpinner');
-  const btn = document.getElementById('btnManualAdd');
+  const nameEl   = document.getElementById('manualName');
+  const textEl   = document.getElementById('manualText');
+  const priceEl  = document.getElementById('manualPrice');
+  const trunkEl  = document.getElementById('manualTrunk');
+  const errorEl  = document.getElementById('manualError');
+  const btnText  = document.getElementById('btnManualAddText');
+  const spinner  = document.getElementById('btnManualAddSpinner');
+  const btn      = document.getElementById('btnManualAdd');
 
   const name = nameEl.value.trim();
   const text = textEl.value.trim();
@@ -1750,6 +1798,11 @@ async function handleManualAdd() {
   if (!name) { errorEl.textContent = 'Add meg az autó nevét!'; errorEl.style.display = 'block'; return; }
 
   const carData = parseManualCarText(name, text);
+
+  // Explicit fields override auto-parsed values
+  if (priceEl.value) carData.price = parseInt(priceEl.value.replace(/\D/g, ''), 10) || carData.price;
+  if (trunkEl.value) carData.trunkVolume = trunkEl.value.trim() + ' l';
+  if (manualImageDataUrls.length > 0) carData.images = [...manualImageDataUrls];
 
   btnText.style.display = 'none';
   spinner.style.display = 'inline-block';
@@ -1769,6 +1822,10 @@ async function handleManualAdd() {
     renderCompareTable();
     nameEl.value = '';
     textEl.value = '';
+    if (priceEl) priceEl.value = '';
+    if (trunkEl) trunkEl.value = '';
+    manualImageDataUrls = [];
+    renderManualImgPreview();
     document.getElementById('manualForm').style.display = 'none';
     showToast(`✅ ${car.name} sikeresen hozzáadva!`);
   } catch (e) {
@@ -1975,6 +2032,16 @@ async function init() {
     form.style.display = visible ? 'none' : 'flex';
   });
   document.getElementById('btnManualAdd').addEventListener('click', handleManualAdd);
+
+  // Image file upload for manual form
+  document.getElementById('manualImages').addEventListener('change', async (e) => {
+    const files = [...e.target.files];
+    if (!files.length) return;
+    const compressed = await Promise.all(files.map(compressImage));
+    manualImageDataUrls.push(...compressed);
+    renderManualImgPreview();
+    e.target.value = '';
+  });
 
   // Compare toggle
   document.getElementById('btnCompare').addEventListener('click', () => {
