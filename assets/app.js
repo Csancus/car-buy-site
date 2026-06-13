@@ -705,26 +705,59 @@ function attachCardEvents(card, car) {
   const img = card.querySelector('.slideshow-img');
   const counter = card.querySelector('.slide-counter');
 
+  function setImgIdx(idx) {
+    const c = getCarById(carId);
+    if (!c || !c.images.length) return;
+    card.dataset.imgIdx = idx;
+    img.src = c.images[idx];
+    counter.textContent = `${idx + 1}/${c.images.length}`;
+    const si = card.querySelector('.summary-img');
+    const sc = card.querySelector('.summary-img-counter');
+    if (si) si.src = c.images[idx];
+    if (sc && c.images.length > 1) sc.textContent = `${idx + 1}/${c.images.length}`;
+  }
+
   card.querySelector('.slide-prev').addEventListener('click', (e) => {
     e.stopPropagation();
     const c = getCarById(carId);
     if (!c || !c.images.length) return;
-    let idx = parseInt(card.dataset.imgIdx || '0', 10);
-    idx = (idx - 1 + c.images.length) % c.images.length;
-    card.dataset.imgIdx = idx;
-    img.src = c.images[idx];
-    counter.textContent = `${idx + 1}/${c.images.length}`;
+    setImgIdx((parseInt(card.dataset.imgIdx || '0', 10) - 1 + c.images.length) % c.images.length);
   });
 
   card.querySelector('.slide-next').addEventListener('click', (e) => {
     e.stopPropagation();
     const c = getCarById(carId);
     if (!c || !c.images.length) return;
-    let idx = parseInt(card.dataset.imgIdx || '0', 10);
-    idx = (idx + 1) % c.images.length;
-    card.dataset.imgIdx = idx;
-    img.src = c.images[idx];
-    counter.textContent = `${idx + 1}/${c.images.length}`;
+    setImgIdx((parseInt(card.dataset.imgIdx || '0', 10) + 1) % c.images.length);
+  });
+
+  // Summary thumbnail: tap left/right half or swipe to navigate images
+  const thumbWrap = card.querySelector('.summary-thumb-wrap');
+  const initCarForThumb = getCarById(carId);
+  if (initCarForThumb && initCarForThumb.images && initCarForThumb.images.length > 1) {
+    thumbWrap.classList.add('has-multiple');
+  }
+  let tsX = 0, wasSwiped = false;
+  thumbWrap.addEventListener('touchstart', (e) => {
+    tsX = e.touches[0].clientX;
+    wasSwiped = false;
+  }, { passive: true });
+  thumbWrap.addEventListener('touchend', (e) => {
+    const c = getCarById(carId);
+    if (!c || !c.images || c.images.length <= 1) return;
+    const dx = e.changedTouches[0].clientX - tsX;
+    if (Math.abs(dx) > 25) {
+      wasSwiped = true;
+      setImgIdx((parseInt(card.dataset.imgIdx || '0', 10) + (dx < 0 ? 1 : -1) + c.images.length) % c.images.length);
+    }
+  });
+  thumbWrap.addEventListener('click', (e) => {
+    if (wasSwiped) { wasSwiped = false; return; }
+    const c = getCarById(carId);
+    if (!c || !c.images || c.images.length <= 1) return;
+    const rect = thumbWrap.getBoundingClientRect();
+    const delta = (e.clientX - rect.left) < rect.width / 2 ? -1 : 1;
+    setImgIdx((parseInt(card.dataset.imgIdx || '0', 10) + delta + c.images.length) % c.images.length);
   });
 
   // Description expand
