@@ -823,9 +823,11 @@ function populateCard(card, car) {
   if (extraLinksWrap) {
     extraLinksWrap.innerHTML = '';
     for (const [i, link] of (car.extraLinks || []).entries()) {
+      const linkUrl = typeof link === 'string' ? link : link.url;
+      const linkName = typeof link === 'string' ? `Link ${i + 2}` : (link.name || `Link ${i + 2}`);
       const a = document.createElement('a');
       a.className = 'btn-listing btn-extra-link';
-      a.href = link;
+      a.href = linkUrl;
       a.target = '_blank';
       a.rel = 'noopener';
       const svgNS = 'http://www.w3.org/2000/svg';
@@ -839,7 +841,7 @@ function populateCard(card, car) {
       svg.setAttribute('stroke-linejoin', 'round');
       svg.innerHTML = '<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>';
       a.appendChild(svg);
-      a.appendChild(document.createTextNode(`Link ${i + 2}`));
+      a.appendChild(document.createTextNode(linkName));
       const del = document.createElement('span');
       del.className = 'extra-link-del';
       del.textContent = '×';
@@ -1289,12 +1291,14 @@ function attachCardEvents(card, car) {
   const btnAddLink = card.querySelector('.btn-add-link');
   const addLinkForm = card.querySelector('.add-link-form');
   const addLinkInput = card.querySelector('.add-link-input');
+  const addLinkNameInput = card.querySelector('.add-link-name-input');
   if (btnAddLink && addLinkForm && addLinkInput) {
     btnAddLink.addEventListener('click', () => {
       btnAddLink.style.display = 'none';
       addLinkForm.style.display = 'flex';
+      if (addLinkNameInput) addLinkNameInput.value = '';
       addLinkInput.value = '';
-      addLinkInput.focus();
+      if (addLinkNameInput) addLinkNameInput.focus(); else addLinkInput.focus();
     });
     const btnAddLinkCancel = card.querySelector('.btn-add-link-cancel');
     if (btnAddLinkCancel) {
@@ -1306,9 +1310,10 @@ function attachCardEvents(card, car) {
     const confirmAddLink = async () => {
       const url = addLinkInput.value.trim();
       if (!url) return;
+      const name = addLinkNameInput ? addLinkNameInput.value.trim() : '';
       const c = getCarById(carId);
       if (!c) return;
-      c.extraLinks = [...(c.extraLinks || []), url];
+      c.extraLinks = [...(c.extraLinks || []), { url, name: name || `Link ${(c.extraLinks || []).length + 2}` }];
       saveToStorage();
       populateCard(card, c);
       addLinkForm.style.display = 'none';
@@ -1318,6 +1323,7 @@ function attachCardEvents(card, car) {
     const btnAddLinkOk = card.querySelector('.btn-add-link-ok');
     if (btnAddLinkOk) btnAddLinkOk.addEventListener('click', confirmAddLink);
     addLinkInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') confirmAddLink(); if (e.key === 'Escape') { addLinkForm.style.display = 'none'; btnAddLink.style.display = ''; } });
+    if (addLinkNameInput) addLinkNameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') addLinkInput.focus(); if (e.key === 'Escape') { addLinkForm.style.display = 'none'; btnAddLink.style.display = ''; } });
   }
 
   // Archive button (quick archive)
