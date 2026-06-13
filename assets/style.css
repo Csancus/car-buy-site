@@ -1341,3 +1341,63 @@ body {
   background: var(--bg-card);
 }
 .feature-add-row input::placeholder { color: var(--text-dim); }
+
+/* ── Summary thumbnail nav arrows ───────────────────────── */
+.sum-slide-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,.52);
+  border: 1px solid rgba(255,255,255,.15);
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  padding: 0;
+  opacity: 0;
+  transition: opacity .15s, background .15s;
+}
+.sum-slide-btn svg { width: 14px; height: 14px; display: block; }
+.sum-slide-btn:hover { background: var(--primary); }
+.summary-thumb-wrap:hover .sum-slide-btn { opacity: 1; }
+@media (pointer: coarse) { .sum-slide-btn { opacity: .8; } }
+.sum-slide-prev { left: 4px; }
+.sum-slide-next { right: 4px; }
+.summary-thumb-wrap:not(.has-multiple) .sum-slide-btn { display: none; }
+
+/* ── Rank weight editor ──────────────────────────────────── */
+.rank-info-list { list-style: none; padding: 0; margin: 10px 0 4px; display: flex; flex-direction: column; gap: 8px; }
+.rank-info-row { display: flex; align-items: center; gap: 8px; cursor: default; }
+.rank-weight-input {
+  width: 52px; min-width: 52px;
+  padding: 3px 6px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--primary);
+  font-weight: 700;
+  font-size: .82rem;
+  text-align: center;
+  outline: none;
+}
+.rank-weight-input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-glow); }
+.rank-expand-btn {
+  background: none; border: none; cursor: pointer; color: var(--primary);
+  font-size: .78rem; padding: 0 2px; text-decoration: underline dotted;
+}
+.rank-top5-detail {
+  display: none;
+  font-size: .76rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+  margin: 4px 0 0 60px;
+  padding: 6px 10px;
+  background: var(--bg-elevated);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.rank-top5-detail.open { display: block; }
+.rank-weight-total-row { font-size: .8rem; color: var(--text-dim); margin-top: 8px; text-align: right; }

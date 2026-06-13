@@ -112,6 +112,13 @@ let activeQuickFilters  = new Set();
 let activeAttrFilters   = {};     // { fuel, transmission, condition, yearFrom, yearTo }
 let activeFeatureFilters = new Set();
 
+const SCORE_WEIGHTS_KEY = 'carbuy_score_weights';
+let SCORE_WEIGHTS = { price: 30, mileage: 25, year: 20, top5: 15, equipment: 10 };
+try {
+  const sw = JSON.parse(localStorage.getItem(SCORE_WEIGHTS_KEY) || '{}');
+  if (sw && typeof sw === 'object') Object.assign(SCORE_WEIGHTS, sw);
+} catch (e) {}
+
 const QUICK_FILTERS = [
   {
     id: 'hybrid',
@@ -517,12 +524,13 @@ function attachAutocomplete(inputEl, onSelect) {
 // Auto Ranking
 // ============================================================
 function computeAutoScore(car) {
+  const W = SCORE_WEIGHTS;
   let score = 0;
-  if (car.price) score += Math.max(0, 30 * (1 - car.price / 15_000_000));
-  if (car.mileage != null) score += Math.max(0, 25 * (1 - car.mileage / 300_000));
-  if (car.year) score += Math.max(0, Math.min(20, (car.year - 2010) / 16 * 20));
-  score += Math.min(15, (car.top5 || []).length * 3);
-  score += Math.min(10, Math.floor((car.equipment || []).length / 5));
+  if (car.price) score += Math.max(0, W.price * (1 - car.price / 15_000_000));
+  if (car.mileage != null) score += Math.max(0, W.mileage * (1 - car.mileage / 300_000));
+  if (car.year) score += Math.max(0, Math.min(W.year, (car.year - 2010) / 16 * W.year));
+  score += Math.min(W.top5, (car.top5 || []).length * (W.top5 / 5));
+  score += Math.min(W.equipment, Math.floor((car.equipment || []).length / 5));
   return score;
 }
 
@@ -1078,6 +1086,20 @@ function attachCardEvents(card, car) {
     const rect = thumbWrap.getBoundingClientRect();
     const delta = (e.clientX - rect.left) < rect.width / 2 ? -1 : 1;
     setImgIdx((parseInt(card.dataset.imgIdx || '0', 10) + delta + c.images.length) % c.images.length);
+  });
+
+  // Summary thumbnail prev/next arrow buttons
+  card.querySelector('.sum-slide-prev').addEventListener('click', (e) => {
+    e.stopPropagation();
+    const c = getCarById(carId);
+    if (!c || !c.images || c.images.length <= 1) return;
+    setImgIdx((parseInt(card.dataset.imgIdx || '0', 10) - 1 + c.images.length) % c.images.length);
+  });
+  card.querySelector('.sum-slide-next').addEventListener('click', (e) => {
+    e.stopPropagation();
+    const c = getCarById(carId);
+    if (!c || !c.images || c.images.length <= 1) return;
+    setImgIdx((parseInt(card.dataset.imgIdx || '0', 10) + 1) % c.images.length);
   });
 
   // Description expand
@@ -1758,7 +1780,24 @@ async function init() {
 
   // Rank info modal
   const rankInfoModal = document.getElementById('rankInfoModal');
+
+  function syncWeightInputs() {
+    document.getElementById('wPrice').value   = SCORE_WEIGHTS.price;
+    document.getElementById('wMileage').value = SCORE_WEIGHTS.mileage;
+    document.getElementById('wYear').value    = SCORE_WEIGHTS.year;
+    document.getElementById('wTop5').value    = SCORE_WEIGHTS.top5;
+    document.getElementById('wEquip').value   = SCORE_WEIGHTS.equipment;
+    updateWeightTotal();
+  }
+  function updateWeightTotal() {
+    const total = ['wPrice','wMileage','wYear','wTop5','wEquip']
+      .reduce((s, id) => s + (parseInt(document.getElementById(id).value) || 0), 0);
+    document.getElementById('rankWeightTotal').textContent = total;
+  }
+  rankInfoModal.querySelectorAll('.rank-weight-input').forEach(inp => inp.addEventListener('input', updateWeightTotal));
+
   document.getElementById('btnRankInfo').addEventListener('click', () => {
+    syncWeightInputs();
     rankInfoModal.classList.add('visible');
   });
   document.getElementById('rankInfoClose').addEventListener('click', () => {
@@ -1766,6 +1805,23 @@ async function init() {
   });
   rankInfoModal.addEventListener('click', (e) => {
     if (e.target === rankInfoModal) rankInfoModal.classList.remove('visible');
+  });
+  document.getElementById('btnSaveWeights').addEventListener('click', () => {
+    SCORE_WEIGHTS.price     = parseInt(document.getElementById('wPrice').value)   || 0;
+    SCORE_WEIGHTS.mileage   = parseInt(document.getElementById('wMileage').value) || 0;
+    SCORE_WEIGHTS.year      = parseInt(document.getElementById('wYear').value)    || 0;
+    SCORE_WEIGHTS.top5      = parseInt(document.getElementById('wTop5').value)    || 0;
+    SCORE_WEIGHTS.equipment = parseInt(document.getElementById('wEquip').value)   || 0;
+    localStorage.setItem(SCORE_WEIGHTS_KEY, JSON.stringify(SCORE_WEIGHTS));
+    refreshAutoRanks();
+    renderAll();
+    rankInfoModal.classList.remove('visible');
+  });
+  document.getElementById('btnTop5Expand').addEventListener('click', (e) => {
+    e.preventDefault();
+    const detail = document.getElementById('top5Detail');
+    detail.classList.toggle('open');
+    e.currentTarget.textContent = detail.classList.contains('open') ? 'bezár ▴' : 'mit néz? ▾';
   });
 
   // SortableJS
