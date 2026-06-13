@@ -511,6 +511,14 @@
         <div class="edit-fields-grid">
           <label class="edit-field ef-wide"><span class="ef-label">Hirdetési URL</span><input type="url" class="ef-input" data-field="url" /></label>
           <label class="edit-field"><span class="ef-label">Eladó neve</span><input type="text" class="ef-input" data-field="sellerName" /></label>
+          <label class="edit-field"><span class="ef-label">Eladó típusa (Típus sor)</span><input type="text" class="ef-input" data-field="sellerType" placeholder="pl. Magánszemély, Kereskedő" /></label>
+          <label class="edit-field"><span class="ef-label">Label</span>
+            <select class="ef-input" data-field="sellerLabel">
+              <option value="">Nincs</option>
+              <option value="private">Magánszemély</option>
+              <option value="dealer">Cég / Kereskedő</option>
+            </select>
+          </label>
           <label class="edit-field"><span class="ef-label">Helyszín</span><input type="text" class="ef-input" data-field="sellerLocation" /></label>
           <label class="edit-field"><span class="ef-label">Telefon</span><input type="tel" class="ef-input" data-field="sellerPhone" /></label>
         </div>
@@ -520,6 +528,9 @@
 
         <div class="edit-section-label">Felszereltség (soronként egy)</div>
         <textarea class="ef-input ef-textarea" data-field="equipment" rows="8" placeholder="ABS (blokkolásgátló fék)&#10;ESP (menetstabilizátor)&#10;..."></textarea>
+
+        <div class="edit-section-label">Megjegyzések</div>
+        <div class="edit-comments-list"></div>
 
         <div class="edit-section-label">Leírás</div>
         <textarea class="ef-input ef-textarea" data-field="description" rows="4" placeholder="Hirdetés szövege..."></textarea>

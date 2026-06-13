@@ -2248,3 +2248,22 @@ body {
 }
 .btn-edit-car:hover { color: var(--primary); background: var(--primary-glow, rgba(124,58,237,.12)); }
 .btn-edit-car .ic { width: 14px; height: 14px; }
+.edit-comment-item {
+  position: relative;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 34px 7px 11px;
+  margin-bottom: 5px;
+  font-size: 0.82rem;
+}
+.edit-comment-meta { color: var(--text-dim); font-size: 0.74rem; margin-bottom: 2px; }
+.edit-comment-at { font-weight: 400; }
+.edit-comment-del {
+  position: absolute; top: 6px; right: 7px;
+  background: none; border: none; cursor: pointer;
+  color: var(--text-dim); font-size: 1rem; line-height: 1;
+  padding: 2px 5px; border-radius: 4px;
+  transition: color var(--transition), background var(--transition);
+}
+.edit-comment-del:hover { color: #ef4444; background: rgba(239,68,68,.1); }

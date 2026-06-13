@@ -1436,14 +1436,31 @@ function openEditModal(car) {
   modal.classList.add('visible');
   modal.querySelectorAll('[data-field]').forEach(el => {
     const field = el.dataset.field;
-    if (field === 'images') {
-      el.value = (car.images || []).join('\n');
+    if (['images', 'top5', 'equipment'].includes(field)) {
+      el.value = (car[field] || []).join('\n');
     } else {
       const val = car[field];
       el.value = val != null ? val : '';
     }
   });
-  // Scroll modal body to top
+  // Comments list
+  const commentsList = modal.querySelector('.edit-comments-list');
+  if (commentsList) {
+    commentsList.innerHTML = '';
+    const comments = car.comments || [];
+    if (comments.length === 0) {
+      commentsList.innerHTML = '<span style="color:var(--text-dim);font-size:.82rem">Nincsenek megjegyzések</span>';
+    } else {
+      comments.forEach((c, i) => {
+        const item = document.createElement('div');
+        item.className = 'edit-comment-item';
+        item.dataset.idx = i;
+        item.innerHTML = `<div class="edit-comment-meta"><strong>${escHtml(c.author)}</strong> <span class="edit-comment-at">${formatDate(c.at)}</span></div><div class="edit-comment-text">${escHtml(c.text)}</div><button class="edit-comment-del" type="button" title="Törlés">×</button>`;
+        item.querySelector('.edit-comment-del').addEventListener('click', () => item.remove());
+        commentsList.appendChild(item);
+      });
+    }
+  }
   const body = modal.querySelector('.edit-car-body');
   if (body) body.scrollTop = 0;
 }
@@ -1473,6 +1490,12 @@ async function saveEditModal() {
       updates[field] = raw;
     }
   });
+  // Comments: collect surviving items
+  const commentsList = modal.querySelector('.edit-comments-list');
+  if (commentsList) {
+    const surviving = new Set([...commentsList.querySelectorAll('.edit-comment-item')].map(el => parseInt(el.dataset.idx)));
+    updates.comments = (c.comments || []).filter((_, i) => surviving.has(i));
+  }
   Object.assign(c, updates);
   if (!('top5' in updates)) c.top5 = computeTop5(c);
   saveToStorage();
