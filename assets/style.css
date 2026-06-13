@@ -665,10 +665,10 @@ body {
   .filter-controls-row { gap: 5px; flex-wrap: wrap; align-items: flex-start; padding: 6px 0; }
   .filter-controls-row > .filter-row { width: 100%; flex-shrink: 1; }
 
-  /* Attr filter row: CSS grid 2-col */
+  /* Attr filter row: responsive auto-fill grid */
   #filterRowAttr {
     display: grid !important;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
     gap: 6px;
     align-items: start;
   }
@@ -678,10 +678,7 @@ body {
   .status-filter-btn { display: block; width: 100%; box-sizing: border-box; }
   .filter-attr-select { display: block; width: 100%; box-sizing: border-box; }
 
-  /* Right-column (even grid items) open panel to right edge */
-  #filterRowAttr > .attr-filter-wrap:nth-child(even) .attr-filter-panel { left: auto; right: 0; }
-
-  /* Cap panel width on narrow screens */
+  /* Cap panel width so it doesn't overflow viewport */
   .attr-filter-panel,
   .status-filter-panel { max-width: min(260px, calc(100vw - 24px)); }
   /* Search row: 2 lines on mobile */
