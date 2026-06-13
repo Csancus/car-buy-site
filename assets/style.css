@@ -750,6 +750,7 @@ body {
   white-space: nowrap;
 }
 .sum-badge:empty { display: none; }
+.sum-warranty { background: var(--green-bg) !important; color: var(--green) !important; border-color: rgba(22,163,74,.25) !important; font-weight: 600; }
 
 .summary-footer { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 

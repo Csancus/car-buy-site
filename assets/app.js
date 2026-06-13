@@ -501,10 +501,15 @@ function populateCard(card, car) {
   setSum('.sum-fuel', car.fuel ? `⛽ ${car.fuel}` : '');
   setSum('.sum-condition', car.condition || '');
 
-  // Condition label buttons
-  card.querySelectorAll('.btn-cond-lbl').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.val === (car.carConditionLabel ?? 'used'));
-  });
+  // Warranty badge
+  const warrantyEl = card.querySelector('.sum-warranty');
+  if (warrantyEl) {
+    const eqLower = (car.equipment || []).map(s => s.toLowerCase());
+    const descLower = (car.description || '').toLowerCase();
+    const hasWarranty = eqHas(eqLower, 'garanci') || descLower.includes('garanci');
+    warrantyEl.textContent = hasWarranty ? '🛡️ Garancia' : '';
+    warrantyEl.style.display = hasWarranty ? '' : 'none';
+  }
 
   // Detail slideshow
   const img = card.querySelector('.slideshow-img');
@@ -668,18 +673,6 @@ function escHtml(str) {
 function attachCardEvents(card, car) {
   const carId = car.id;
 
-  // Condition label toggle
-  card.querySelectorAll('.btn-cond-lbl').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const val = btn.dataset.val;
-      const c = getCarById(carId);
-      if (!c) return;
-      c.carConditionLabel = val;
-      saveToStorage();
-      card.querySelectorAll('.btn-cond-lbl').forEach(b => b.classList.toggle('active', b.dataset.val === val));
-      await apiUpdateCar(carId, { carConditionLabel: val });
-    });
-  });
 
   // Seller label toggle
   card.querySelectorAll('.btn-seller-lbl').forEach(btn => {
