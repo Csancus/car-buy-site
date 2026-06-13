@@ -2256,12 +2256,15 @@ async function init() {
   const carsGrid = document.getElementById('carsGrid');
   let viewMode = localStorage.getItem('carbuy_view') || 'grid';
   function applyViewMode() {
-    carsGrid.classList.toggle('view-list', viewMode === 'list');
-    document.getElementById('btnViewGrid').classList.toggle('btn-active', viewMode === 'grid');
-    document.getElementById('btnViewList').classList.toggle('btn-active', viewMode === 'list');
+    const isMobile = window.innerWidth <= 640;
+    const effective = isMobile ? 'grid' : viewMode;
+    carsGrid.classList.toggle('view-list', effective === 'list');
+    document.getElementById('btnViewGrid').classList.toggle('btn-active', effective === 'grid');
+    document.getElementById('btnViewList').classList.toggle('btn-active', effective === 'list');
   }
   document.getElementById('btnViewGrid').addEventListener('click', () => { viewMode = 'grid'; localStorage.setItem('carbuy_view', viewMode); applyViewMode(); });
   document.getElementById('btnViewList').addEventListener('click', () => { viewMode = 'list'; localStorage.setItem('carbuy_view', viewMode); applyViewMode(); });
+  window.addEventListener('resize', applyViewMode);
   applyViewMode();
 
   // Theme toggle
