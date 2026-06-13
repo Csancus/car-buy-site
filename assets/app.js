@@ -559,7 +559,7 @@ function computeAutoScore(car) {
   const fuel = (car.fuel || '').toLowerCase();
   if (fuel.includes('plug-in') || fuel.includes('plugin')) score += 10;
   const trans = (car.transmission || '').toLowerCase();
-  if (trans.includes('automat') || trans.includes('fokozatmentes') || trans.includes('tiptronic') || trans.includes('dct') || trans.includes('cvt')) score += 5;
+  if (trans.includes('automat') || trans.includes('fokozatmentes') || trans.includes('tiptronic') || trans.includes('dct') || trans.includes('cvt')) score += 10;
   return score;
 }
 
