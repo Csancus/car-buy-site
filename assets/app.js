@@ -1287,6 +1287,16 @@ function attachCardEvents(card, car) {
     });
   }
 
+  // Edit car
+  const btnEditCar = card.querySelector('.btn-edit-car');
+  if (btnEditCar) {
+    btnEditCar.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const c = getCarById(carId);
+      if (c) openEditModal(c);
+    });
+  }
+
   // Extra link — add button
   const btnAddLink = card.querySelector('.btn-add-link');
   const addLinkForm = card.querySelector('.add-link-form');
@@ -1413,6 +1423,66 @@ function attachCardEvents(card, car) {
 
 function getCarById(id) {
   return cars.find(c => c.id === id);
+}
+
+// ============================================================
+// Edit Car Modal
+// ============================================================
+let _editingCarId = null;
+
+function openEditModal(car) {
+  _editingCarId = car.id;
+  const modal = document.getElementById('editCarModal');
+  modal.style.display = 'flex';
+  modal.querySelectorAll('[data-field]').forEach(el => {
+    const field = el.dataset.field;
+    if (field === 'images') {
+      el.value = (car.images || []).join('\n');
+    } else {
+      const val = car[field];
+      el.value = val != null ? val : '';
+    }
+  });
+  // Scroll modal body to top
+  const body = modal.querySelector('.edit-car-body');
+  if (body) body.scrollTop = 0;
+}
+
+function closeEditModal() {
+  const modal = document.getElementById('editCarModal');
+  if (modal) modal.style.display = 'none';
+  _editingCarId = null;
+}
+
+async function saveEditModal() {
+  if (_editingCarId == null) return;
+  const c = getCarById(_editingCarId);
+  if (!c) { closeEditModal(); return; }
+  const modal = document.getElementById('editCarModal');
+  const updates = {};
+  modal.querySelectorAll('[data-field]').forEach(el => {
+    const field = el.dataset.field;
+    const raw = el.value.trim();
+    if (field === 'images') {
+      updates.images = raw.split('\n').map(s => s.trim()).filter(Boolean);
+    } else if (['year', 'price', 'mileage', 'trunkVolume'].includes(field)) {
+      updates[field] = raw ? parseInt(raw, 10) : null;
+    } else if (field === 'consumption') {
+      updates[field] = raw ? parseFloat(raw) : null;
+    } else {
+      updates[field] = raw;
+    }
+  });
+  Object.assign(c, updates);
+  c.top5 = computeTop5(c);
+  saveToStorage();
+  const cardEl = document.querySelector(`.car-card[data-id="${_editingCarId}"]`);
+  if (cardEl) populateCard(cardEl, c);
+  refreshAutoRanks();
+  applyFilters();
+  renderFilterBar();
+  closeEditModal();
+  await apiUpdateCar(c.id, updates);
 }
 
 // ============================================================
@@ -2140,7 +2210,7 @@ function initSortable() {
     ghostClass: 'sortable-ghost',
     dragClass: 'sortable-drag',
     handle: '.card-header-row',
-    filter: '.btn-archive, .btn-avail, .status-select, .slide-btn, .btn-toggle-equip, a',
+    filter: '.btn-archive, .btn-edit-car, .btn-avail, .status-select, .slide-btn, .btn-toggle-equip, a',
     preventOnFilter: false,
     onEnd: async () => {
       const cardEls = grid.querySelectorAll('.car-card');
@@ -2448,6 +2518,23 @@ async function init() {
 
   // SortableJS
   initSortable();
+
+  // Edit car modal
+  const editCarCancelBtn = document.getElementById('editCarCancel');
+  const editCarSaveBtn = document.getElementById('editCarSave');
+  const editCarCloseBtn = document.querySelector('.edit-car-close');
+  const editCarOverlay = document.getElementById('editCarModal');
+  if (editCarCancelBtn) editCarCancelBtn.addEventListener('click', closeEditModal);
+  if (editCarSaveBtn) editCarSaveBtn.addEventListener('click', saveEditModal);
+  if (editCarCloseBtn) editCarCloseBtn.addEventListener('click', closeEditModal);
+  if (editCarOverlay) {
+    editCarOverlay.addEventListener('click', (e) => {
+      if (e.target === editCarOverlay) closeEditModal();
+    });
+    editCarOverlay.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeEditModal();
+    });
+  }
 
   // ── Personal ranking modal ─────────────────────────────────
   let prmSortable = null;

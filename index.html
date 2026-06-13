@@ -209,6 +209,9 @@
         </div>
         <div class="summary-body">
           <div class="card-top-actions">
+            <button class="btn-edit-car" title="Szerkesztés">
+              <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+            </button>
             <button class="btn-avail" title="Elérhetőség váltása"></button>
             <button class="btn-archive" title="Archiválás">
               <svg class="ic" viewBox="0 0 24 24"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg>
@@ -460,6 +463,70 @@
       <div class="modal-actions prm-actions">
         <button class="btn btn-ghost btn-sm" id="btnCancelPrm">Mégse</button>
         <button class="btn btn-primary btn-sm" id="btnSavePrm">Mentés</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit car modal -->
+  <div class="modal-overlay edit-car-overlay" id="editCarModal" style="display:none">
+    <div class="edit-car-box">
+      <div class="edit-car-header">
+        <span class="edit-car-title">Autó szerkesztése</span>
+        <button class="edit-car-close" type="button" aria-label="Bezárás">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
+      <div class="edit-car-body">
+        <datalist id="dl-fuel"><option>Benzin</option><option>Dízel</option><option>Hibrid (HEV)</option><option>Plug-in hibrid (PHEV)</option><option>Elektromos</option><option>LPG</option><option>CNG</option><option>Mild hibrid</option></datalist>
+        <datalist id="dl-transmission"><option>Kézi</option><option>Automata</option><option>DCT (kettős kuplungos)</option><option>CVT (fokozat nélküli)</option></datalist>
+        <datalist id="dl-condition"><option>Új</option><option>Újszerű</option><option>Megkímélt</option><option>Normál</option><option>Kopott</option><option>Sérült</option></datalist>
+        <datalist id="dl-bodytype"><option>Sedan</option><option>Kombi</option><option>SUV</option><option>Crossover</option><option>Hatchback</option><option>Coupe</option><option>Cabrio</option><option>Egyterű</option><option>Pickup</option></datalist>
+
+        <div class="edit-section-label">Alapadatok</div>
+        <div class="edit-fields-grid">
+          <label class="edit-field ef-wide"><span class="ef-label">Hirdetés neve</span><input type="text" class="ef-input" data-field="name" /></label>
+          <label class="edit-field"><span class="ef-label">Márka</span><input type="text" class="ef-input" data-field="brand" /></label>
+          <label class="edit-field"><span class="ef-label">Modell</span><input type="text" class="ef-input" data-field="model" /></label>
+          <label class="edit-field"><span class="ef-label">Évjárat</span><input type="number" class="ef-input" data-field="year" min="1990" max="2035" /></label>
+          <label class="edit-field"><span class="ef-label">Ár (Ft)</span><input type="number" class="ef-input" data-field="price" min="0" step="100000" /></label>
+          <label class="edit-field"><span class="ef-label">Km-óraállás</span><input type="number" class="ef-input" data-field="mileage" min="0" step="1000" /></label>
+        </div>
+
+        <div class="edit-section-label">Műszaki adatok</div>
+        <div class="edit-fields-grid">
+          <label class="edit-field"><span class="ef-label">Üzemanyag</span><input type="text" class="ef-input" data-field="fuel" list="dl-fuel" /></label>
+          <label class="edit-field"><span class="ef-label">Váltó</span><input type="text" class="ef-input" data-field="transmission" list="dl-transmission" /></label>
+          <label class="edit-field"><span class="ef-label">Állapot</span><input type="text" class="ef-input" data-field="condition" list="dl-condition" /></label>
+          <label class="edit-field"><span class="ef-label">Autó minősége</span>
+            <select class="ef-input" data-field="carConditionLabel"><option value="used">Használt</option><option value="new">Új autó</option></select>
+          </label>
+          <label class="edit-field"><span class="ef-label">Teljesítmény</span><input type="text" class="ef-input" data-field="performance" placeholder="pl. 150 LE (110 kW)" /></label>
+          <label class="edit-field"><span class="ef-label">Fogyasztás (l/100km)</span><input type="number" class="ef-input" data-field="consumption" step="0.1" min="0" /></label>
+          <label class="edit-field"><span class="ef-label">Csomagtartó (l)</span><input type="number" class="ef-input" data-field="trunkVolume" min="0" /></label>
+          <label class="edit-field"><span class="ef-label">Karosszéria</span><input type="text" class="ef-input" data-field="bodyType" list="dl-bodytype" /></label>
+          <label class="edit-field"><span class="ef-label">Szín</span><input type="text" class="ef-input" data-field="color" /></label>
+        </div>
+
+        <div class="edit-section-label">Eladó / Hirdetés</div>
+        <div class="edit-fields-grid">
+          <label class="edit-field ef-wide"><span class="ef-label">Hirdetési URL</span><input type="url" class="ef-input" data-field="url" /></label>
+          <label class="edit-field"><span class="ef-label">Eladó neve</span><input type="text" class="ef-input" data-field="sellerName" /></label>
+          <label class="edit-field"><span class="ef-label">Helyszín</span><input type="text" class="ef-input" data-field="sellerLocation" /></label>
+          <label class="edit-field"><span class="ef-label">Telefon</span><input type="tel" class="ef-input" data-field="sellerPhone" /></label>
+        </div>
+
+        <div class="edit-section-label">Leírás</div>
+        <textarea class="ef-input ef-textarea" data-field="description" rows="4" placeholder="Hirdetés szövege..."></textarea>
+
+        <div class="edit-section-label">Képek (URL-ek, soronként egy)</div>
+        <textarea class="ef-input ef-textarea" data-field="images" rows="3" placeholder="https://..."></textarea>
+      </div>
+      <div class="edit-car-footer">
+        <button class="btn btn-ghost btn-sm" id="editCarCancel">Mégse</button>
+        <button class="btn btn-primary btn-sm" id="editCarSave">
+          <svg class="ic" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Mentés
+        </button>
       </div>
     </div>
   </div>
