@@ -16,12 +16,17 @@ async function saveCars(cars) {
 }
 
 // ── HTTP fetch via curl (bypasses Cloudflare TLS fingerprinting) ──
+const COOKIE_JAR = '/tmp/hasznaltauto_cookies.jar';
+
 function fetchUrl(targetUrl) {
   return new Promise((resolve, reject) => {
     execFile('curl', [
       '-s', '-L',
       '--compressed',
+      '--http2',
       '--max-time', '25',
+      '-c', COOKIE_JAR,
+      '-b', COOKIE_JAR,
       '-A', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
       '-H', 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
       '-H', 'Accept-Language: hu-HU,hu;q=0.9,en;q=0.8',
@@ -30,11 +35,11 @@ function fetchUrl(targetUrl) {
       '-H', 'Sec-Fetch-Mode: navigate',
       '-H', 'Sec-Fetch-Site: none',
       '-H', 'Sec-Fetch-User: ?1',
-      '-w', '\n__STATUS__%{http_code}',
+      '-w', '\n__CURL_STATUS__%{http_code}',
       targetUrl,
-    ], { maxBuffer: 10 * 1024 * 1024 }, (err, stdout, stderr) => {
+    ], { maxBuffer: 10 * 1024 * 1024 }, (err, stdout) => {
       if (err) return reject(new Error(err.message));
-      const marker = '\n__STATUS__';
+      const marker = '\n__CURL_STATUS__';
       const idx = stdout.lastIndexOf(marker);
       const status = idx !== -1 ? parseInt(stdout.slice(idx + marker.length), 10) : 200;
       const body = idx !== -1 ? stdout.slice(0, idx) : stdout;
