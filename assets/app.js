@@ -111,6 +111,7 @@ let activeSortBy        = null;   // 'price_asc' | 'price_desc'
 let activeQuickFilters  = new Set();
 let activeAttrFilters   = {};     // { fuel, transmission, condition, yearFrom, yearTo }
 let activeFeatureFilters = new Set();
+let activeSearch = '';
 
 const SCORE_WEIGHTS = { price: 30, mileage: 25, year: 20, top5: 15, equipment: 10, location: 5 };
 
@@ -1226,6 +1227,8 @@ function renderFilterBar() {
   const filterBar = document.getElementById('filterBar');
   if (!filterBar) return;
   filterBar.style.display = cars.length > 0 ? '' : 'none';
+  const searchWrap = document.getElementById('searchBarWrap');
+  if (searchWrap) searchWrap.style.display = cars.length > 0 ? '' : 'none';
   if (cars.length === 0) return;
 
   // ── Ár rendezés ───────────────────────────────────────────
@@ -1441,6 +1444,12 @@ function applyFilters() {
     const car = cars.find(c => String(c.id) === String(cardEl.dataset.id));
     if (!car) { cardEl.style.display = 'none'; continue; }
     let v = true;
+    if (v && activeSearch) {
+      const q = activeSearch.toLowerCase();
+      const hay = [car.name, car.brand, car.model, car.fuel, car.transmission, car.sellerLocation,
+                   ...(car.equipment || []), ...(car.top5 || [])].join(' ').toLowerCase();
+      v = hay.includes(q);
+    }
     if (v && activePersonFilter)
       v = (car.rankings || []).some(r => r.name === activePersonFilter);
     for (const id of activeQuickFilters) {
@@ -1881,6 +1890,15 @@ async function init() {
   document.getElementById('urlInput').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') handleAddCar();
   });
+
+  // Search
+  const searchInput = document.getElementById('globalSearch');
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      activeSearch = searchInput.value.trim();
+      applyFilters();
+    });
+  }
 
   // Manual add toggle
   document.getElementById('btnManualToggle').addEventListener('click', () => {
