@@ -398,21 +398,6 @@ body {
 
 .card-order-btns { display: flex; align-items: center; gap: 3px; flex-shrink: 0; }
 
-.btn-order {
-  width: 26px;
-  height: 26px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--bg-elevated);
-  color: var(--text-dim);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background var(--transition), color var(--transition), border-color var(--transition);
-}
-.btn-order svg { width: 14px; height: 14px; }
-.btn-order:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
 
 .btn-delete {
   width: 26px;
@@ -684,7 +669,6 @@ body {
   .view-list .summary-footer { gap: 4px; }
   .view-list .btn-listing,
   .view-list .btn-expand { font-size: 0.72rem; padding: 3px 8px; }
-  .btn-up, .btn-down { display: none; }
   .btn-delete { width: 34px; height: 34px; }
 
   /* Compare table: compact + allow word wrap */

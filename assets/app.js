@@ -1118,36 +1118,6 @@ function attachCardEvents(card, car) {
     this.textContent = isHidden ? 'Kevesebb mutatása' : 'Összes felszereltség mutatása';
   });
 
-  // Order up
-  card.querySelector('.btn-up').addEventListener('click', async () => {
-    const c = getCarById(carId);
-    if (!c) return;
-    const idx = cars.findIndex(x => x.id === c.id);
-    if (idx > 0) {
-      cars[idx].order = idx - 1;
-      cars[idx - 1].order = idx;
-      cars.sort((a, b) => a.order - b.order);
-      saveToStorage();
-      await apiSaveOrder(cars.map(x => x.id));
-      renderAll();
-    }
-  });
-
-  // Order down
-  card.querySelector('.btn-down').addEventListener('click', async () => {
-    const c = getCarById(carId);
-    if (!c) return;
-    const idx = cars.findIndex(x => x.id === c.id);
-    if (idx < cars.length - 1) {
-      cars[idx].order = idx + 1;
-      cars[idx + 1].order = idx;
-      cars.sort((a, b) => a.order - b.order);
-      saveToStorage();
-      await apiSaveOrder(cars.map(x => x.id));
-      renderAll();
-    }
-  });
-
   // Delete
   card.querySelector('.btn-delete').addEventListener('click', async () => {
     if (await showConfirm(`Biztosan törlöd ezt a hirdetést?\n${car.name}`)) {
@@ -1677,7 +1647,7 @@ function initSortable() {
     ghostClass: 'sortable-ghost',
     dragClass: 'sortable-drag',
     handle: '.card-header-row',
-    filter: '.btn-order, .btn-delete, .slide-btn, .btn-toggle-equip, .comment-form, a',
+    filter: '.btn-delete, .slide-btn, .btn-toggle-equip, .comment-form, a',
     onEnd: async () => {
       const cardEls = grid.querySelectorAll('.car-card');
       cardEls.forEach((el, i) => {
