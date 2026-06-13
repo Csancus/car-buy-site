@@ -1717,6 +1717,22 @@ body {
 .toast-visible { opacity: 1; transform: translateY(0); }
 
 /* Search bar */
+.filter-search-row {
+  padding: 4px 0 2px;
+}
+.search-input-wrap--hero { max-width: 560px; }
+.search-ic--hero { width: 18px; height: 18px; left: 14px; }
+.global-search-input--hero {
+  font-size: 1rem;
+  padding: 11px 16px 11px 44px;
+  border-radius: 12px;
+  border-width: 2px;
+  background: var(--bg-card);
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+}
+.global-search-input--hero:focus {
+  box-shadow: 0 0 0 3px rgba(99,102,241,.15), 0 2px 8px rgba(0,0,0,.06);
+}
 .filter-search-wrap {
   flex: 1;
   min-width: 160px;
