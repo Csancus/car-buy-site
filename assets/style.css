@@ -840,8 +840,6 @@ body {
   padding: 8px 4px;
   z-index: 300;
   min-width: 220px;
-  max-height: 260px;
-  overflow-y: auto;
   white-space: nowrap;
 }
 .input-error { border-color: #ef4444 !important; box-shadow: 0 0 0 2px rgba(239,68,68,.2) !important; }
