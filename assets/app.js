@@ -1645,7 +1645,7 @@ function buildCompareTable() {
     {
       label: 'Eladó',
       getValue: null,
-      display: c => c.seller || '—',
+      display: c => c.sellerName || c.seller || '—',
     },
     {
       label: 'Fogyasztás',
