@@ -613,7 +613,7 @@ function eqHasAll(eqLower, keywords) {
 // Rendering
 // ============================================================
 function getDisplayCars() {
-  const base = [...cars].sort((a, b) => a.order - b.order);
+  const base = [...cars];
   if (activePersonFilter) {
     return base.sort((a, b) => {
       const posA = (a.rankings || []).find(r => r.name === activePersonFilter)?.position ?? 999;
@@ -623,8 +623,8 @@ function getDisplayCars() {
   }
   if (activeSortBy === 'price_asc')  return base.sort((a, b) => (a.price || Infinity)  - (b.price || Infinity));
   if (activeSortBy === 'price_desc') return base.sort((a, b) => (b.price || -Infinity) - (a.price || -Infinity));
-  if (activeSortBy === 'rank')       return base.sort((a, b) => computeAutoScore(b) - computeAutoScore(a));
-  return base;
+  // Default: auto-rank score (best first)
+  return base.sort((a, b) => computeAutoScore(b) - computeAutoScore(a));
 }
 
 function renderAll() {
@@ -1720,7 +1720,7 @@ async function init() {
 
   function openPrmModal(prefillName) {
     const modal = document.getElementById('prmModal');
-    modal.style.display = 'flex';
+    modal.classList.add('visible');
     document.body.style.overflow = 'hidden';
     const nameInput = document.getElementById('prmNameInput');
     nameInput.value = prefillName || '';
@@ -1730,7 +1730,7 @@ async function init() {
   }
 
   function closePrmModal() {
-    document.getElementById('prmModal').style.display = 'none';
+    document.getElementById('prmModal').classList.remove('visible');
     document.body.style.overflow = '';
   }
 
