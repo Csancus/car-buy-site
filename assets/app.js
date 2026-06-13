@@ -109,7 +109,7 @@ let lightboxImages = [];
 let lightboxIdx = 0;
 let activeSortBy        = 'rank';  // 'rank' | 'price_asc' | 'price_desc'
 let activeQuickFilters  = new Set();
-let activeAttrFilters   = { fuel: new Set(), transmission: new Set(), condition: new Set() };
+let activeAttrFilters   = { brand: new Set(), model: new Set(), fuel: new Set(), transmission: new Set(), condition: new Set(), year: new Set() };
 let activeFeatureFilters = new Set();
 let activeSearch = '';
 let activeStatusFilters = new Set(['active', 'top']);
@@ -1396,67 +1396,21 @@ function renderFilterBar() {
     statusWrap.appendChild(statusPanel);
     rowAttr.appendChild(statusWrap);
 
-    // Brand dropdown
-    const brands = [...new Set(cars.map(c => c.brand).filter(Boolean))].sort();
-    if (brands.length > 1) {
-      const selBrand = document.createElement('select');
-      selBrand.className = 'filter-attr-select';
-      const defB = document.createElement('option');
-      defB.value = ''; defB.textContent = 'Márka';
-      selBrand.appendChild(defB);
-      for (const b of brands) {
-        const opt = document.createElement('option');
-        opt.value = b; opt.textContent = b;
-        if (activeAttrFilters.brand === b) opt.selected = true;
-        selBrand.appendChild(opt);
-      }
-      selBrand.addEventListener('change', () => {
-        activeAttrFilters.brand = selBrand.value || null;
-        if (activeAttrFilters.model) {
-          const modelsForBrand = [...new Set(cars.filter(c => !activeAttrFilters.brand || c.brand === activeAttrFilters.brand).map(c => c.model).filter(Boolean))];
-          if (!modelsForBrand.includes(activeAttrFilters.model)) activeAttrFilters.model = null;
-        }
-        applyFilters(); renderFilterBar();
-      });
-      rowAttr.appendChild(selBrand);
-    }
+    // "Szűrők:" label
+    const szurokLbl = document.createElement('span');
+    szurokLbl.className = 'filter-section-label';
+    szurokLbl.textContent = 'Szűrők:';
+    rowAttr.appendChild(szurokLbl);
 
-    // Model dropdown (filtered by selected brand)
-    const modelsSource = activeAttrFilters.brand
-      ? cars.filter(c => c.brand === activeAttrFilters.brand)
-      : cars;
-    const models = [...new Set(modelsSource.map(c => c.model).filter(Boolean))].sort();
-    if (models.length > 1) {
-      const selModel = document.createElement('select');
-      selModel.className = 'filter-attr-select';
-      const defM = document.createElement('option');
-      defM.value = ''; defM.textContent = 'Típus';
-      selModel.appendChild(defM);
-      for (const m of models) {
-        const opt = document.createElement('option');
-        opt.value = m; opt.textContent = m;
-        if (activeAttrFilters.model === m) opt.selected = true;
-        selModel.appendChild(opt);
-      }
-      selModel.addEventListener('change', () => { activeAttrFilters.model = selModel.value || null; applyFilters(); });
-      rowAttr.appendChild(selModel);
-    }
-
-    for (const { key, label } of [
-      { key: 'fuel', label: 'Üzemanyag' },
-      { key: 'transmission', label: 'Váltó' },
-      { key: 'condition', label: 'Állapot' },
-    ]) {
-      const vals = [...new Set(cars.map(c => c[key]).filter(Boolean))].sort();
-      if (!vals.length) continue;
-      const activeSet = activeAttrFilters[key];
+    // Checkbox dropdown helper
+    function makeCheckboxDropdown(key, label, vals, activeSet, onChange) {
+      if (!vals.length) return null;
       const wrap = document.createElement('div');
       wrap.className = 'attr-filter-wrap';
       wrap.addEventListener('click', e => e.stopPropagation());
-      const btnLabel = activeSet.size > 0 ? [...activeSet].join(', ') : label;
       const btn = document.createElement('button');
       btn.className = 'filter-attr-select attr-filter-btn' + (activeSet.size > 0 ? ' has-active' : '');
-      btn.textContent = btnLabel;
+      btn.textContent = activeSet.size > 0 ? [...activeSet].join(', ') : label;
       const panel = document.createElement('div');
       panel.className = 'attr-filter-panel';
       panel.style.display = 'none';
@@ -1467,40 +1421,57 @@ function renderFilterBar() {
         panel.style.display = isOpen ? 'none' : 'block';
       });
       for (const v of vals) {
-        const row = document.createElement('label');
-        row.className = 'status-filter-option';
+        const lrow = document.createElement('label');
+        lrow.className = 'status-filter-option';
         const cb = document.createElement('input');
         cb.type = 'checkbox';
         cb.checked = activeSet.has(v);
         cb.addEventListener('change', () => {
           if (cb.checked) activeSet.add(v); else activeSet.delete(v);
-          applyFilters(); renderFilterBar();
+          onChange();
         });
-        row.appendChild(cb);
-        row.append(' ' + v);
-        panel.appendChild(row);
+        lrow.appendChild(cb);
+        lrow.append(' ' + v);
+        panel.appendChild(lrow);
       }
       wrap.appendChild(btn);
       wrap.appendChild(panel);
-      rowAttr.appendChild(wrap);
+      return wrap;
     }
-    const yearVals = cars.map(c => c.year).filter(Boolean);
-    if (yearVals.length > 1) {
-      const yLbl = document.createElement('span');
-      yLbl.className = 'filter-section-label'; yLbl.textContent = 'Évjárat:';
-      rowAttr.appendChild(yLbl);
-      for (const [field, ph] of [['yearFrom','tól'],['yearTo','ig']]) {
-        const inp = document.createElement('input');
-        inp.type = 'number'; inp.className = 'filter-year-input'; inp.placeholder = ph;
-        inp.min = Math.min(...yearVals); inp.max = Math.max(...yearVals);
-        inp.value = activeAttrFilters[field] || '';
-        inp.addEventListener('change', () => {
-          activeAttrFilters[field] = inp.value ? parseInt(inp.value) : null;
-          applyFilters();
-        });
-        rowAttr.appendChild(inp);
+
+    // Márka
+    const brands = [...new Set(cars.map(c => c.brand).filter(Boolean))].sort();
+    const brandWrap = makeCheckboxDropdown('brand', 'Márka', brands, activeAttrFilters.brand, () => {
+      // clear models that no longer match selected brands
+      if (activeAttrFilters.model.size) {
+        const validModels = new Set(cars.filter(c => !activeAttrFilters.brand.size || activeAttrFilters.brand.has(c.brand)).map(c => c.model).filter(Boolean));
+        for (const m of [...activeAttrFilters.model]) { if (!validModels.has(m)) activeAttrFilters.model.delete(m); }
       }
+      applyFilters(); renderFilterBar();
+    });
+    if (brandWrap) rowAttr.appendChild(brandWrap);
+
+    // Típus (filtered by selected brands)
+    const modelsSource = activeAttrFilters.brand.size ? cars.filter(c => activeAttrFilters.brand.has(c.brand)) : cars;
+    const models = [...new Set(modelsSource.map(c => c.model).filter(Boolean))].sort();
+    const modelWrap = makeCheckboxDropdown('model', 'Típus', models, activeAttrFilters.model, () => { applyFilters(); renderFilterBar(); });
+    if (modelWrap) rowAttr.appendChild(modelWrap);
+
+    // Üzemanyag, Váltó, Állapot
+    for (const { key, label } of [
+      { key: 'fuel', label: 'Üzemanyag' },
+      { key: 'transmission', label: 'Váltó' },
+      { key: 'condition', label: 'Állapot' },
+    ]) {
+      const vals = [...new Set(cars.map(c => c[key]).filter(Boolean))].sort();
+      const w = makeCheckboxDropdown(key, label, vals, activeAttrFilters[key], () => { applyFilters(); renderFilterBar(); });
+      if (w) rowAttr.appendChild(w);
     }
+
+    // Évjárat checkbox dropdown (sorted descending)
+    const yearVals = [...new Set(cars.map(c => c.year).filter(Boolean))].sort((a, b) => b - a);
+    const yearWrap = makeCheckboxDropdown('year', 'Évjárat', yearVals, activeAttrFilters.year, () => { applyFilters(); renderFilterBar(); });
+    if (yearWrap) rowAttr.appendChild(yearWrap);
   }
 
   // ── Rangsorok section ─────────────────────────────────────
@@ -1564,13 +1535,12 @@ function applyFilters() {
       const qf = QUICK_FILTERS.find(f => f.id === id);
       if (qf && !qf.test(car)) v = false;
     }
-    if (v && activeAttrFilters.brand)                   v = car.brand === activeAttrFilters.brand;
-    if (v && activeAttrFilters.model)                   v = car.model === activeAttrFilters.model;
+    if (v && activeAttrFilters.brand?.size)        v = activeAttrFilters.brand.has(car.brand);
+    if (v && activeAttrFilters.model?.size)        v = activeAttrFilters.model.has(car.model);
     if (v && activeAttrFilters.fuel?.size)         v = activeAttrFilters.fuel.has(car.fuel);
     if (v && activeAttrFilters.transmission?.size) v = activeAttrFilters.transmission.has(car.transmission);
     if (v && activeAttrFilters.condition?.size)    v = activeAttrFilters.condition.has(car.condition);
-    if (v && activeAttrFilters.yearFrom)     v = (car.year || 0) >= activeAttrFilters.yearFrom;
-    if (v && activeAttrFilters.yearTo)       v = (car.year || 9999) <= activeAttrFilters.yearTo;
+    if (v && activeAttrFilters.year?.size)         v = activeAttrFilters.year.has(car.year);
     for (const feat of activeFeatureFilters) {
       if (!v) break;
       v = (car.equipment || []).includes(feat);
