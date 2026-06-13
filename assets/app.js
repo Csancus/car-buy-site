@@ -789,16 +789,26 @@ function populateCard(card, car) {
         const pTop5   = Math.min(W.top5, (car.top5 || []).length * (W.top5 / 5)).toFixed(1);
         const pEquip  = Math.min(W.equipment, Math.floor((car.equipment || []).length / 5)).toFixed(1);
         const locLow  = (car.sellerLocation || '').toLowerCase();
-        const pLoc    = (locLow.includes('budapest') || locLow.includes('pest')) ? `+${W.location}` : '0';
+        const pLoc    = (locLow.includes('budapest') || locLow.includes('pest')) ? `+${W.location}` : null;
+        const fuelLow = (car.fuel || '').toLowerCase();
+        const pPhev   = (fuelLow.includes('plug-in') || fuelLow.includes('plugin')) ? '+10' : null;
+        const transLow = (car.transmission || '').toLowerCase();
+        const pAuto   = (transLow.includes('automat') || transLow.includes('fokozatmentes') || transLow.includes('tiptronic') || transLow.includes('dct') || transLow.includes('cvt')) ? '+10' : null;
+        const pNew    = car.carConditionLabel === 'new' ? '+5' : null;
         const total   = computeAutoScore(car).toFixed(1);
-        const pNew = car.carConditionLabel === 'new' ? '+10' : '0';
-        rankInfoBtn.dataset.scoreHtml =
-          `Ár: ${pPrice} pt\nKm-óra: ${pKm} pt\nÉvjárat: ${pYear} pt\n` +
-          `Kiemelések (${(car.top5||[]).length}/5): ${pTop5} pt\n` +
-          `Felszereltség (${(car.equipment||[]).length} elem): ${pEquip} pt\n` +
-          `Budapest/Pest: ${pLoc} pt\n` +
-          `Új autó bónusz: ${pNew} pt\n` +
-          `Összesen: ${total} pt`;
+        const lines = [
+          `Ár: ${pPrice} pt`,
+          `Km-óra: ${pKm} pt`,
+          `Évjárat: ${pYear} pt`,
+          `Kiemelések (${(car.top5||[]).length}/5): ${pTop5} pt`,
+          `Felszereltség (${(car.equipment||[]).length} elem): ${pEquip} pt`,
+          pLoc  ? `Budapest/Pest: ${pLoc} pt` : null,
+          pPhev ? `PHEV bónusz: ${pPhev} pt` : null,
+          pAuto ? `Automata bónusz: ${pAuto} pt` : null,
+          pNew  ? `Új autó bónusz: ${pNew} pt` : null,
+          `Összesen: ${total} pt`,
+        ].filter(Boolean);
+        rankInfoBtn.dataset.scoreHtml = lines.join('\n');
         rankInfoBtn.style.display = 'inline';
       }
     } else {
@@ -1158,8 +1168,14 @@ function attachCardEvents(card, car) {
       tip.innerHTML = text.split('\n').map((line, i, arr) =>
         i === arr.length - 1 ? `<strong>${line}</strong>` : escHtml(line)
       ).join('<br>');
-      rankScoreBtn.closest('.car-name-area').style.position = 'relative';
-      rankScoreBtn.closest('.car-name-area').appendChild(tip);
+      document.body.appendChild(tip);
+      const btnRect = rankScoreBtn.getBoundingClientRect();
+      tip.style.left = btnRect.left + 'px';
+      tip.style.top  = (btnRect.bottom + 6) + 'px';
+      const tipH = tip.getBoundingClientRect().height;
+      if (btnRect.bottom + 6 + tipH > window.innerHeight - 8) {
+        tip.style.top = (btnRect.top - tipH - 6) + 'px';
+      }
       const close = () => { tip.remove(); document.removeEventListener('click', close); };
       setTimeout(() => document.addEventListener('click', close), 0);
     });
