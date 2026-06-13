@@ -116,7 +116,7 @@ let activeStatusFilters = new Set(['active', 'top']);
 let statusFilterOpen = false;
 let manualImageDataUrls = [];
 
-const SCORE_WEIGHTS = { price: 35, mileage: 25, year: 20, location: 5 };
+const SCORE_WEIGHTS = { price: 40, mileage: 25, year: 20, location: 5 };
 
 const QUICK_FILTERS = [
   {
@@ -1228,27 +1228,29 @@ function attachCardEvents(card, car) {
   });
 
   // Personal rankings form
-  card.querySelector('.ranking-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const nameEl = card.querySelector('.ranking-input-name');
-    const posEl = card.querySelector('.ranking-input-pos');
-    const name = nameEl.value.trim();
-    const position = parseInt(posEl.value, 10);
-    if (!name) { nameEl.classList.add('input-error'); nameEl.focus(); setTimeout(() => nameEl.classList.remove('input-error'), 1500); return; }
-    if (!position) { posEl.classList.add('input-error'); posEl.focus(); setTimeout(() => posEl.classList.remove('input-error'), 1500); return; }
-    const c = getCarById(carId);
-    if (!c) return;
-    if (!c.rankings) c.rankings = [];
-    c.rankings = c.rankings.filter(r => r.name !== name);
-    c.rankings.push({ name, position });
-    c.rankings.sort((a, b) => a.position - b.position);
-    saveToStorage();
-    renderRankings(card, c);
-    renderFilterBar();
-    await apiUpdateCar(carId, { rankings: c.rankings });
-    nameEl.value = '';
-    posEl.value = '';
-  });
+  const rankingSubmitBtn = card.querySelector('.ranking-form .btn-ranking-submit');
+  if (rankingSubmitBtn) {
+    rankingSubmitBtn.addEventListener('click', async () => {
+      const nameEl = card.querySelector('.ranking-input-name');
+      const posEl = card.querySelector('.ranking-input-pos');
+      const name = nameEl.value.trim();
+      const position = parseInt(posEl.value, 10);
+      if (!name) { nameEl.classList.add('input-error'); nameEl.focus(); setTimeout(() => nameEl.classList.remove('input-error'), 1500); return; }
+      if (!position) { posEl.classList.add('input-error'); posEl.focus(); setTimeout(() => posEl.classList.remove('input-error'), 1500); return; }
+      const c = cars.find(c => String(c.id) === String(carId));
+      if (!c) return;
+      if (!c.rankings) c.rankings = [];
+      c.rankings = c.rankings.filter(r => r.name !== name);
+      c.rankings.push({ name, position });
+      c.rankings.sort((a, b) => a.position - b.position);
+      saveToStorage();
+      renderRankings(card, c);
+      renderFilterBar();
+      await apiUpdateCar(carId, { rankings: c.rankings });
+      nameEl.value = '';
+      posEl.value = '';
+    });
+  }
 
   // Personal ranking delete (delegated)
   card.querySelector('.rankings-list').addEventListener('click', async (e) => {
