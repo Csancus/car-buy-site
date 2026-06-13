@@ -538,6 +538,8 @@ function computeAutoScore(car) {
   score += Math.min(W.equipment, Math.floor((car.equipment || []).length / 5));
   const loc = (car.sellerLocation || '').toLowerCase();
   if (loc.includes('budapest') || loc.includes('pest')) score += W.location;
+  const fuel = (car.fuel || '').toLowerCase();
+  if (fuel.includes('plug-in') || fuel.includes('plugin')) score += 10;
   return score;
 }
 
