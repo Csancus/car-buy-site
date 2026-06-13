@@ -652,11 +652,11 @@ body {
     gap: 4px;
   }
   .filter-chips-row::-webkit-scrollbar { display: none; }
-  .filter-controls-row { gap: 5px; }
-  .filter-controls-row > .btn-rank-info { margin-left: 0; }
-  .filter-feature-search { width: 150px; }
-  .filter-feature-search:focus { width: 170px; }
-  .filter-year-input { width: 58px; }
+  .filter-chips-divider { display: none; }
+  .filter-controls-row { gap: 5px; flex-wrap: wrap; }
+  .filter-rank-actions { margin-left: 0; width: 100%; justify-content: flex-start; }
+  .filter-feature-wrap { display: none; }
+  .filter-year-input { width: 52px; }
 
   /* Compact list view on mobile */
   .view-list .card-summary { padding: 8px 10px; gap: 8px; }
@@ -671,14 +671,14 @@ body {
   .view-list .btn-expand { font-size: 0.72rem; padding: 3px 8px; }
   .btn-delete { width: 34px; height: 34px; }
 
-  /* Compare table: compact + allow word wrap */
-  .compare-inner { padding: 14px; }
-  .compare-table { font-size: 0.77rem; min-width: 0; }
+  /* Compare table: vízszintes scroll, oszlopok fix szélesek */
+  .compare-inner { padding: 10px 12px; }
+  .compare-table { font-size: 0.78rem; min-width: 500px; }
   .compare-table th,
-  .compare-table td { padding: 7px 9px; white-space: normal; word-break: break-word; max-width: 120px; }
-  .compare-table thead th { font-size: 0.68rem; }
+  .compare-table td { padding: 7px 10px; white-space: nowrap; min-width: 130px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; }
+  .compare-table thead th { font-size: 0.69rem; white-space: normal; word-break: break-word; min-width: 110px; }
   .compare-table tbody td:first-child,
-  .compare-table thead th:first-child { min-width: 80px; max-width: 90px; }
+  .compare-table thead th:first-child { min-width: 80px; max-width: 90px; width: 90px; }
 }
 
 @media (max-width: 480px) {

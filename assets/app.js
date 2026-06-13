@@ -1458,7 +1458,7 @@ function buildCompareTable() {
     return;
   }
 
-  const sorted = [...cars].sort((a, b) => a.order - b.order);
+  const sorted = getDisplayCars();
 
   // Header
   thead.innerHTML = '';
