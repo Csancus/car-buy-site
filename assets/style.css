@@ -1369,10 +1369,13 @@ body {
 .summary-thumb-wrap:not(.has-multiple) .sum-slide-btn { display: none; }
 
 /* ── Rank weight editor ──────────────────────────────────── */
-.rank-info-list { list-style: none; padding: 0; margin: 10px 0 4px; display: flex; flex-direction: column; gap: 8px; }
-.rank-info-row { display: flex; align-items: center; gap: 8px; cursor: default; }
+.rank-info-list { list-style: none; padding: 0; margin: 10px 0 4px; display: flex; flex-direction: column; gap: 6px; }
+.rank-info-list li { display: flex; flex-direction: column; gap: 4px; }
+.rank-info-row { display: flex; align-items: center; gap: 8px; width: 100%; }
+.rank-info-row > span { flex: 1; min-width: 0; }
 .rank-weight-input {
-  width: 52px; min-width: 52px;
+  flex-shrink: 0;
+  width: 52px;
   padding: 3px 6px;
   border-radius: 20px;
   border: 1px solid var(--border);
@@ -1386,14 +1389,14 @@ body {
 .rank-weight-input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-glow); }
 .rank-expand-btn {
   background: none; border: none; cursor: pointer; color: var(--primary);
-  font-size: .78rem; padding: 0 2px; text-decoration: underline dotted;
+  font-size: .78rem; padding: 0 2px; text-decoration: underline dotted; white-space: nowrap;
 }
 .rank-top5-detail {
   display: none;
   font-size: .76rem;
   color: var(--text-dim);
   line-height: 1.5;
-  margin: 4px 0 0 60px;
+  margin: 0;
   padding: 6px 10px;
   background: var(--bg-elevated);
   border-radius: 8px;
