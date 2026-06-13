@@ -1592,6 +1592,128 @@ function buildCompareTable() {
 }
 
 // ============================================================
+// Manual Car Add
+// ============================================================
+function parseManualCarText(name, text) {
+  const lower = text.toLowerCase();
+
+  // Price: "11 900 000 Ft" or "11.900.000 Ft" or "11 900 000 forint"
+  let price = null;
+  const priceM = text.match(/(\d[\d\s.]*)[\s]*(millió\s*ft|millió\s*forint)/i);
+  if (priceM) {
+    price = Math.round(parseFloat(priceM[1].replace(/[\s.]/g, '').replace(',', '.')) * 1_000_000);
+  } else {
+    const priceM2 = text.match(/(\d[\d\s.]{4,})\s*(ft|forint)/i);
+    if (priceM2) price = parseInt(priceM2[1].replace(/[\s.]/g, ''), 10);
+  }
+
+  // Year: 4-digit 1990-2030
+  let year = null;
+  const yearM = text.match(/\b(199\d|20[012]\d)\b/);
+  if (yearM) year = parseInt(yearM[1], 10);
+
+  // Mileage: "125 000 km"
+  let mileage = null;
+  const mileM = text.match(/(\d[\d\s.]*)\s*km/i);
+  if (mileM) mileage = parseInt(mileM[1].replace(/[\s.]/g, ''), 10);
+
+  // Fuel
+  let fuel = '';
+  if (lower.includes('plug-in') || lower.includes('plugin') || lower.includes('phev')) fuel = 'Plug-In Hibrid (PHEV)';
+  else if (lower.includes('hibrid') || lower.includes('hybrid')) fuel = 'Hibrid';
+  else if (lower.includes('elektromos') || lower.includes('electric') || lower.includes('bev')) fuel = 'Elektromos';
+  else if (lower.includes('dízel') || lower.includes('diesel')) fuel = 'Dízel';
+  else if (lower.includes('benzin') || lower.includes('petrol') || lower.includes('gasoline')) fuel = 'Benzin';
+
+  // Transmission
+  let transmission = '';
+  if (lower.includes('fokozatmentes') || lower.includes('e-cvt') || lower.includes('cvt')) transmission = 'Fokozatmentes automata';
+  else if (lower.includes('automata') || lower.includes('automatic') || lower.includes('tiptronic') || lower.includes('dct')) transmission = 'Automata';
+  else if (lower.includes('manuális') || lower.includes('manual')) transmission = 'Manuális';
+
+  // Equipment: meaningful lines (length 4-80, not pure numbers)
+  const equipment = text.split(/[\n;]/)
+    .map(s => s.trim())
+    .filter(s => s.length >= 4 && s.length <= 80 && !/^\d+$/.test(s));
+
+  // Seller location
+  let sellerLocation = '';
+  const locM = text.match(/\b(budapest|pest|győr|debrecen|miskolc|pécs|nyíregyháza|kecskemét|székesfehérvár|szombathely)\b/i);
+  if (locM) sellerLocation = locM[0].charAt(0).toUpperCase() + locM[0].slice(1).toLowerCase();
+
+  const nameParts = name.trim().split(/\s+/);
+  const brand = nameParts[0] || '';
+  const model = nameParts.slice(1).join(' ');
+
+  return {
+    id: 'manual_' + Date.now(),
+    name: name.trim(),
+    brand,
+    model,
+    price,
+    year,
+    mileage,
+    fuel,
+    transmission,
+    equipment,
+    top5: [],
+    images: [],
+    url: '',
+    sellerLocation,
+    sellerLabel: '',
+    carConditionLabel: 'new',
+    order: 0,
+    manual: true,
+  };
+}
+
+async function handleManualAdd() {
+  const nameEl = document.getElementById('manualName');
+  const textEl = document.getElementById('manualText');
+  const errorEl = document.getElementById('manualError');
+  const btnText = document.getElementById('btnManualAddText');
+  const spinner = document.getElementById('btnManualAddSpinner');
+  const btn = document.getElementById('btnManualAdd');
+
+  const name = nameEl.value.trim();
+  const text = textEl.value.trim();
+  errorEl.style.display = 'none';
+
+  if (!name) { errorEl.textContent = 'Add meg az autó nevét!'; errorEl.style.display = 'block'; return; }
+
+  const carData = parseManualCarText(name, text);
+
+  btnText.style.display = 'none';
+  spinner.style.display = 'inline-block';
+  btn.disabled = true;
+
+  try {
+    const resp = await fetch('/api/cars', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ manual: true, carData }),
+    });
+    if (!resp.ok) { const d = await resp.json(); throw new Error(d.error || 'Szerverhiba'); }
+    const car = await resp.json();
+    cars.push(car);
+    saveToStorage();
+    renderAll();
+    renderCompareTable();
+    nameEl.value = '';
+    textEl.value = '';
+    document.getElementById('manualForm').style.display = 'none';
+    showToast(`✅ ${car.name} sikeresen hozzáadva!`);
+  } catch (e) {
+    errorEl.textContent = `Hiba: ${e.message}`;
+    errorEl.style.display = 'block';
+  } finally {
+    btnText.style.display = 'inline';
+    spinner.style.display = 'none';
+    btn.disabled = false;
+  }
+}
+
+// ============================================================
 // Add Car Flow
 // ============================================================
 async function handleAddCar() {
@@ -1759,6 +1881,14 @@ async function init() {
   document.getElementById('urlInput').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') handleAddCar();
   });
+
+  // Manual add toggle
+  document.getElementById('btnManualToggle').addEventListener('click', () => {
+    const form = document.getElementById('manualForm');
+    const visible = form.style.display !== 'none';
+    form.style.display = visible ? 'none' : 'flex';
+  });
+  document.getElementById('btnManualAdd').addEventListener('click', handleManualAdd);
 
   // Compare toggle
   document.getElementById('btnCompare').addEventListener('click', () => {

@@ -18,7 +18,16 @@ module.exports = async (req, res) => {
     }
 
     if (req.method === 'POST') {
-      const { url } = req.body || {};
+      const { url, manual, carData } = req.body || {};
+
+      if (manual && carData) {
+        const cars = await loadCars();
+        carData.order = cars.length;
+        cars.push(carData);
+        await saveCars(cars);
+        return res.status(200).json(carData);
+      }
+
       if (!url) return res.status(400).json({ error: 'URL megadása kötelező' });
 
       let parsedUrl;

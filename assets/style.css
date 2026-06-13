@@ -1578,3 +1578,38 @@ body {
   white-space: nowrap;
 }
 .toast-visible { opacity: 1; transform: translateY(0); }
+
+/* Manual add form */
+.manual-add-toggle-row { margin-top: 10px; }
+.btn-secondary {
+  background: transparent;
+  border: 1.5px solid var(--border);
+  color: var(--text-secondary);
+  gap: 6px;
+}
+.btn-secondary:hover { border-color: var(--primary); color: var(--primary); background: rgba(var(--primary-rgb,99,102,241),.06); }
+.btn-sm { padding: 7px 14px; font-size: 0.82rem; }
+.manual-form {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.manual-name-input, .manual-text-input {
+  width: 100%;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.9rem;
+  padding: 10px 14px;
+  box-sizing: border-box;
+  transition: border-color .15s;
+  resize: vertical;
+}
+.manual-name-input:focus, .manual-text-input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+.manual-form-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
