@@ -155,6 +155,16 @@ const QUICK_FILTERS = [
     label: '🏢 Cég / Kereskedő',
     test: car => car.sellerLabel === 'dealer',
   },
+  {
+    id: 'new_car',
+    label: '✨ Új autó',
+    test: car => car.carConditionLabel === 'new',
+  },
+  {
+    id: 'used_car',
+    label: '🔧 Használt',
+    test: car => car.carConditionLabel !== 'new',
+  },
 ];
 
 // ============================================================
