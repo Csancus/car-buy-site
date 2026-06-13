@@ -107,7 +107,7 @@ let autoRanks = {};
 let activePersonFilter  = null;
 let lightboxImages = [];
 let lightboxIdx = 0;
-let activeSortBy        = null;   // 'price_asc' | 'price_desc'
+let activeSortBy        = 'rank';  // 'rank' | 'price_asc' | 'price_desc'
 let activeQuickFilters  = new Set();
 let activeAttrFilters   = { fuel: new Set(), transmission: new Set(), condition: new Set() };
 let activeFeatureFilters = new Set();
@@ -2179,7 +2179,8 @@ async function init() {
   rankInfoModal.addEventListener('click', (e) => {
     if (e.target === rankInfoModal) rankInfoModal.classList.remove('visible');
   });
-  document.getElementById('btnTop5Expand').addEventListener('click', (e) => {
+  const btnTop5Expand = document.getElementById('btnTop5Expand');
+  if (btnTop5Expand) btnTop5Expand.addEventListener('click', (e) => {
     e.preventDefault();
     const detail = document.getElementById('top5Detail');
     detail.classList.toggle('open');
