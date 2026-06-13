@@ -581,6 +581,7 @@ function computeAutoScore(car) {
   if (loc.includes('budapest') || loc.includes('pest')) score += W.location;
   const fuel = (car.fuel || '').toLowerCase();
   if (fuel.includes('plug-in') || fuel.includes('plugin')) score += 10;
+  else if (fuel.includes('hibrid')) score += 5;
   const trans = (car.transmission || '').toLowerCase();
   if (trans.includes('automat') || trans.includes('fokozatmentes') || trans.includes('tiptronic') || trans.includes('dct') || trans.includes('cvt')) score += 10;
   if (car.carConditionLabel === 'new') score += 5;
@@ -796,6 +797,7 @@ function populateCard(card, car) {
         const pLoc    = (locLow.includes('budapest') || locLow.includes('pest')) ? `+${W.location}` : null;
         const fuelLow = (car.fuel || '').toLowerCase();
         const pPhev   = (fuelLow.includes('plug-in') || fuelLow.includes('plugin')) ? '+10' : null;
+        const pHybrid = (!fuelLow.includes('plug-in') && !fuelLow.includes('plugin') && fuelLow.includes('hibrid')) ? '+5' : null;
         const transLow = (car.transmission || '').toLowerCase();
         const pAuto   = (transLow.includes('automat') || transLow.includes('fokozatmentes') || transLow.includes('tiptronic') || transLow.includes('dct') || transLow.includes('cvt')) ? '+10' : null;
         const pNew    = car.carConditionLabel === 'new' ? '+5' : null;
@@ -810,6 +812,7 @@ function populateCard(card, car) {
           `Évjárat: ${pYear} pt`,
           pLoc     ? `Budapest/Pest: ${pLoc} pt` : null,
           pPhev    ? `PHEV bónusz: ${pPhev} pt` : null,
+          pHybrid  ? `Hybrid bónusz: ${pHybrid} pt` : null,
           pAuto    ? `Automata bónusz: ${pAuto} pt` : null,
           pNew     ? `Új autó bónusz: ${pNew} pt` : null,
           pConsump ? `Fogyasztás (${car.consumption} l): ${pConsump} pt` : null,
