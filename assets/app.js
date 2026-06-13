@@ -109,7 +109,7 @@ let lightboxImages = [];
 let lightboxIdx = 0;
 let activeSortBy        = null;   // 'price_asc' | 'price_desc'
 let activeQuickFilters  = new Set();
-let activeAttrFilters   = {};     // { fuel, transmission, condition, yearFrom, yearTo }
+let activeAttrFilters   = { fuel: new Set(), transmission: new Set(), condition: new Set() };
 let activeFeatureFilters = new Set();
 let activeSearch = '';
 let activeStatusFilters = new Set(['active', 'top']);
@@ -1234,7 +1234,8 @@ function attachCardEvents(card, car) {
     const posEl = card.querySelector('.ranking-input-pos');
     const name = nameEl.value.trim();
     const position = parseInt(posEl.value, 10);
-    if (!name || !position) return;
+    if (!name) { nameEl.classList.add('input-error'); nameEl.focus(); setTimeout(() => nameEl.classList.remove('input-error'), 1500); return; }
+    if (!position) { posEl.classList.add('input-error'); posEl.focus(); setTimeout(() => posEl.classList.remove('input-error'), 1500); return; }
     const c = getCarById(carId);
     if (!c) return;
     if (!c.rankings) c.rankings = [];
@@ -1433,19 +1434,40 @@ function renderFilterBar() {
     ]) {
       const vals = [...new Set(cars.map(c => c[key]).filter(Boolean))].sort();
       if (!vals.length) continue;
-      const sel = document.createElement('select');
-      sel.className = 'filter-attr-select';
-      const defOpt = document.createElement('option');
-      defOpt.value = ''; defOpt.textContent = label;
-      sel.appendChild(defOpt);
+      const activeSet = activeAttrFilters[key];
+      const wrap = document.createElement('div');
+      wrap.className = 'attr-filter-wrap';
+      wrap.addEventListener('click', e => e.stopPropagation());
+      const btnLabel = activeSet.size > 0 ? [...activeSet].join(', ') : label;
+      const btn = document.createElement('button');
+      btn.className = 'filter-attr-select attr-filter-btn' + (activeSet.size > 0 ? ' has-active' : '');
+      btn.textContent = btnLabel;
+      const panel = document.createElement('div');
+      panel.className = 'attr-filter-panel';
+      panel.style.display = 'none';
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = panel.style.display !== 'none';
+        document.querySelectorAll('.attr-filter-panel').forEach(p => p.style.display = 'none');
+        panel.style.display = isOpen ? 'none' : 'block';
+      });
       for (const v of vals) {
-        const opt = document.createElement('option');
-        opt.value = v; opt.textContent = v;
-        if (activeAttrFilters[key] === v) opt.selected = true;
-        sel.appendChild(opt);
+        const row = document.createElement('label');
+        row.className = 'status-filter-option';
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.checked = activeSet.has(v);
+        cb.addEventListener('change', () => {
+          if (cb.checked) activeSet.add(v); else activeSet.delete(v);
+          applyFilters(); renderFilterBar();
+        });
+        row.appendChild(cb);
+        row.append(' ' + v);
+        panel.appendChild(row);
       }
-      sel.addEventListener('change', () => { activeAttrFilters[key] = sel.value || null; applyFilters(); });
-      rowAttr.appendChild(sel);
+      wrap.appendChild(btn);
+      wrap.appendChild(panel);
+      rowAttr.appendChild(wrap);
     }
     const yearVals = cars.map(c => c.year).filter(Boolean);
     if (yearVals.length > 1) {
@@ -1464,62 +1486,6 @@ function renderFilterBar() {
         rowAttr.appendChild(inp);
       }
     }
-  }
-
-  // ── Felszereltség szűrő (keresés a CAR_FEATURES / tényleges eq-ban) ──
-  const rowFeature = document.getElementById('filterRowFeature');
-  if (rowFeature) {
-    rowFeature.innerHTML = '';
-    // Active feature pills
-    for (const feat of activeFeatureFilters) {
-      const pill = document.createElement('button');
-      pill.className = 'filter-pill active';
-      pill.innerHTML = escHtml(feat) + ' <span class="pill-x">×</span>';
-      pill.addEventListener('click', () => {
-        activeFeatureFilters.delete(feat);
-        applyFilters(); renderFilterBar();
-      });
-      rowFeature.appendChild(pill);
-    }
-    // Search input
-    const wrap = document.createElement('div');
-    wrap.className = 'filter-feature-wrap';
-    const input = document.createElement('input');
-    input.type = 'text'; input.className = 'filter-feature-search';
-    input.placeholder = '🔍 Felszereltség szűrő…';
-    const suggestions = document.createElement('div');
-    suggestions.className = 'filter-feature-suggestions';
-    suggestions.style.display = 'none';
-
-    const availEq = new Set();
-    for (const car of cars) for (const e of (car.equipment || [])) availEq.add(e);
-
-    input.addEventListener('input', () => {
-      const q = input.value.toLowerCase().trim();
-      suggestions.innerHTML = '';
-      if (!q) { suggestions.style.display = 'none'; return; }
-      const matches = [...availEq]
-        .filter(f => f.toLowerCase().includes(q) && !activeFeatureFilters.has(f))
-        .slice(0, 12);
-      if (!matches.length) { suggestions.style.display = 'none'; return; }
-      for (const m of matches) {
-        const item = document.createElement('div');
-        item.className = 'filter-feature-suggestion-item';
-        item.textContent = m;
-        item.addEventListener('mousedown', e => {
-          e.preventDefault();
-          activeFeatureFilters.add(m);
-          input.value = '';
-          suggestions.style.display = 'none';
-          applyFilters(); renderFilterBar();
-        });
-        suggestions.appendChild(item);
-      }
-      suggestions.style.display = 'block';
-    });
-    input.addEventListener('blur', () => { setTimeout(() => { suggestions.style.display = 'none'; }, 150); });
-    wrap.appendChild(input); wrap.appendChild(suggestions);
-    rowFeature.appendChild(wrap);
   }
 
   // ── Személy filter (rangsorok alapján) ────────────────────
@@ -1565,11 +1531,11 @@ function applyFilters() {
       const qf = QUICK_FILTERS.find(f => f.id === id);
       if (qf && !qf.test(car)) v = false;
     }
-    if (v && activeAttrFilters.brand)        v = car.brand === activeAttrFilters.brand;
-    if (v && activeAttrFilters.model)        v = car.model === activeAttrFilters.model;
-    if (v && activeAttrFilters.fuel)         v = car.fuel === activeAttrFilters.fuel;
-    if (v && activeAttrFilters.transmission) v = car.transmission === activeAttrFilters.transmission;
-    if (v && activeAttrFilters.condition)    v = car.condition === activeAttrFilters.condition;
+    if (v && activeAttrFilters.brand)                   v = car.brand === activeAttrFilters.brand;
+    if (v && activeAttrFilters.model)                   v = car.model === activeAttrFilters.model;
+    if (v && activeAttrFilters.fuel?.size)         v = activeAttrFilters.fuel.has(car.fuel);
+    if (v && activeAttrFilters.transmission?.size) v = activeAttrFilters.transmission.has(car.transmission);
+    if (v && activeAttrFilters.condition?.size)    v = activeAttrFilters.condition.has(car.condition);
     if (v && activeAttrFilters.yearFrom)     v = (car.year || 0) >= activeAttrFilters.yearFrom;
     if (v && activeAttrFilters.yearTo)       v = (car.year || 9999) <= activeAttrFilters.yearTo;
     for (const feat of activeFeatureFilters) {
@@ -2069,13 +2035,14 @@ async function init() {
     });
   }
 
-  // Close status filter panel on outside click
+  // Close filter panels on outside click
   document.addEventListener('click', () => {
     if (statusFilterOpen) {
       statusFilterOpen = false;
       const panel = document.querySelector('.status-filter-panel');
       if (panel) panel.style.display = 'none';
     }
+    document.querySelectorAll('.attr-filter-panel').forEach(p => p.style.display = 'none');
   });
 
   // Manual add toggle

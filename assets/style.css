@@ -826,6 +826,24 @@ body {
 .car-card.is-archived .summary-img { filter: grayscale(50%); }
 
 /* ── Status filter dropdown ─────────────────────────────── */
+.status-filter-wrap, .attr-filter-wrap { position: relative; }
+.attr-filter-btn { cursor: pointer; white-space: nowrap; }
+.attr-filter-btn.has-active { border-color: var(--primary); color: var(--primary); font-weight: 600; }
+.attr-filter-panel {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgba(0,0,0,.12);
+  padding: 8px 4px;
+  z-index: 300;
+  min-width: 160px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+.input-error { border-color: #ef4444 !important; box-shadow: 0 0 0 2px rgba(239,68,68,.2) !important; }
 .status-filter-wrap { position: relative; }
 .status-filter-btn {
   cursor: pointer;

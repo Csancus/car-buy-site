@@ -147,7 +147,6 @@
       <!-- Sor 2: attribútum szűrők + felszereltség keresés + Rangsor gombok -->
       <div class="filter-controls-row">
         <div class="filter-row" id="filterRowAttr"></div>
-        <div class="filter-row" id="filterRowFeature"></div>
         <div id="searchBarWrap" class="filter-search-wrap" style="display:none">
           <div class="search-input-wrap">
             <svg class="ic search-ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -358,7 +357,7 @@
               Saját rangsorok
             </h3>
             <ul class="rankings-list"></ul>
-            <form class="ranking-form">
+            <form class="ranking-form" novalidate>
               <div class="ranking-inputs">
                 <input type="text" class="ranking-input-name" placeholder="Neved" maxlength="30" required />
                 <input type="number" class="ranking-input-pos" placeholder="#" min="1" max="99" required />
