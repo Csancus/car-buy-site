@@ -194,12 +194,11 @@ body {
 /* ── Add Car Section ────────────────────────────────────── */
 .add-car-section {
   background: var(--bg-card);
-  border-bottom: 1px solid var(--border);
-  padding: 16px 24px;
+  padding: 16px 0;
   transition: background .2s, border-color .2s;
 }
 
-.add-car-inner { max-width: 1400px; margin: 0 auto; }
+.add-car-inner { max-width: 1400px; margin: 0 auto; padding: 0 24px; }
 .add-car-form { width: 100%; }
 
 .input-group { display: flex; gap: 8px; align-items: stretch; }
@@ -640,7 +639,8 @@ body {
   .header-actions { width: 100%; }
   .cars-grid     { grid-template-columns: 1fr; padding: 14px; gap: 14px; }
   .input-group   { flex-direction: column; }
-  .add-car-section { padding: 14px 16px; }
+  .add-car-section { padding: 14px 0; }
+  .add-car-inner { padding: 0 16px; }
 
   /* Filter bar — mobile */
   .filter-bar-inner { padding: 0 12px; }
@@ -962,7 +962,6 @@ body {
   gap: 5px;
   flex-wrap: wrap;
   padding: 8px 0;
-  border-bottom: 1px solid var(--border);
   overflow: hidden;
 }
 .filter-chips-divider {

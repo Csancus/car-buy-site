@@ -138,6 +138,14 @@ const QUICK_FILTERS = [
     }),
   },
   {
+    id: 'heated_rear',
+    label: '🔥 Fűtött hátsó ülés',
+    test: car => (car.equipment || []).some(e => {
+      const el = e.toLowerCase();
+      return el.includes('fűthet') && el.includes('hátsó') && el.includes('ülés');
+    }),
+  },
+  {
     id: 'warranty',
     label: '🛡️ Garancia',
     test: car => {
