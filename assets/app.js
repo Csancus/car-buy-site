@@ -621,6 +621,7 @@ function getDisplayCars() {
   const base = [...cars].sort((a, b) => a.order - b.order);
   if (activeSortBy === 'price_asc')  return base.sort((a, b) => (a.price || Infinity)  - (b.price || Infinity));
   if (activeSortBy === 'price_desc') return base.sort((a, b) => (b.price || -Infinity) - (a.price || -Infinity));
+  if (activeSortBy === 'rank')       return base.sort((a, b) => computeAutoScore(b) - computeAutoScore(a));
   return base;
 }
 
@@ -1235,9 +1236,9 @@ function renderFilterBar() {
     rowSort.innerHTML = '';
     const lbl = document.createElement('span');
     lbl.className = 'filter-section-label';
-    lbl.textContent = 'Ár:';
+    lbl.textContent = 'Rendezés:';
     rowSort.appendChild(lbl);
-    for (const [key, icon, txt] of [['price_asc','↑','Növekvő'],['price_desc','↓','Csökkenő']]) {
+    for (const [key, icon, txt] of [['rank','🏆','Rangsor'],['price_asc','↑','Ár: olcsó'],['price_desc','↓','Ár: drága']]) {
       const btn = document.createElement('button');
       btn.className = 'filter-pill' + (activeSortBy === key ? ' active' : '');
       btn.textContent = `${icon} ${txt}`;
