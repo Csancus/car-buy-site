@@ -90,17 +90,24 @@
   <!-- Filter bar -->
   <div class="filter-bar" id="filterBar" style="display:none">
     <div class="filter-bar-inner">
-      <div class="filter-row" id="filterRowSort"></div>
-      <div class="filter-row" id="filterRowQuick"></div>
-      <div class="filter-row" id="filterRowAttr"></div>
-      <div class="filter-row" id="filterRowFeature"></div>
-      <div class="filter-row" id="filterRowPerson" style="display:none">
-        <div class="filter-pills" id="filterPills"></div>
+      <!-- Sor 1: rendezés + gyorsszűrők + személyek -->
+      <div class="filter-chips-row">
+        <div class="filter-row" id="filterRowSort"></div>
+        <div class="filter-chips-divider"></div>
+        <div class="filter-row" id="filterRowQuick"></div>
+        <div class="filter-row" id="filterRowPerson" style="display:none">
+          <div class="filter-pills" id="filterPills"></div>
+        </div>
       </div>
-      <button class="btn-rank-info btn btn-sm btn-outline" id="btnRankInfo" title="Automatikus rangsor módszertana">
-        <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-        Rangsor
-      </button>
+      <!-- Sor 2: attribútum szűrők + felszereltség keresés + Rangsor gomb -->
+      <div class="filter-controls-row">
+        <div class="filter-row" id="filterRowAttr"></div>
+        <div class="filter-row" id="filterRowFeature"></div>
+        <button class="btn-rank-info btn btn-sm btn-outline" id="btnRankInfo" title="Automatikus rangsor módszertana">
+          <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          Rangsor
+        </button>
+      </div>
     </div>
   </div>
 

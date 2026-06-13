@@ -657,6 +657,22 @@ body {
   .input-group   { flex-direction: column; }
   .add-car-section { padding: 14px 16px; }
 
+  /* Filter bar — mobile */
+  .filter-bar-inner { padding: 0 12px; }
+  .filter-chips-row {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    gap: 4px;
+  }
+  .filter-chips-row::-webkit-scrollbar { display: none; }
+  .filter-controls-row { gap: 5px; }
+  .filter-controls-row > .btn-rank-info { margin-left: 0; }
+  .filter-feature-search { width: 150px; }
+  .filter-feature-search:focus { width: 170px; }
+  .filter-year-input { width: 58px; }
+
   /* Compact list view on mobile */
   .view-list .card-summary { padding: 8px 10px; gap: 8px; }
   .view-list .summary-thumb-wrap { width: 100px; height: 66px; }
@@ -869,18 +885,55 @@ body {
 .filter-bar-inner {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 10px 24px;
+  padding: 0 24px;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
 }
+
+/* ── Chips sor: rendezés + gyorsszűrők + személyek ── */
+.filter-chips-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+}
+.filter-chips-divider {
+  width: 1px;
+  height: 16px;
+  background: var(--border-mid);
+  flex-shrink: 0;
+  margin: 0 2px;
+}
+.filter-chips-row > .filter-row {
+  width: auto;
+  flex-shrink: 0;
+}
+
+/* ── Kontroll sor: lenyílók + keresés + Rangsor ── */
+.filter-controls-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 7px 0;
+}
+.filter-controls-row > .filter-row {
+  width: auto;
+  flex-shrink: 0;
+}
+.filter-controls-row > .btn-rank-info {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
 .filter-row {
   display: flex;
   align-items: center;
   gap: 5px;
   flex-wrap: wrap;
-  width: 100%;
 }
 .filter-row:empty { display: none !important; }
 .filter-section-label { font-size: 0.72rem; color: var(--text-dim); white-space: nowrap; flex-shrink: 0; }
