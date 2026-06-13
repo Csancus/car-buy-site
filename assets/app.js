@@ -800,8 +800,6 @@ function populateCard(card, car) {
           `Ár: ${pPrice} pt`,
           `Km-óra: ${pKm} pt`,
           `Évjárat: ${pYear} pt`,
-          `Kiemelések (${(car.top5||[]).length}/5): ${pTop5} pt`,
-          `Felszereltség (${(car.equipment||[]).length} elem): ${pEquip} pt`,
           pLoc     ? `Budapest/Pest: ${pLoc} pt` : null,
           pPhev    ? `PHEV bónusz: ${pPhev} pt` : null,
           pAuto    ? `Automata bónusz: ${pAuto} pt` : null,
