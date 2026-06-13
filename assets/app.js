@@ -116,7 +116,7 @@ let activeStatusFilters = new Set(['active', 'top']);
 let statusFilterOpen = false;
 let manualImageDataUrls = [];
 
-const SCORE_WEIGHTS = { price: 35, mileage: 25, year: 20, top5: 15, equipment: 10, location: 5 };
+const SCORE_WEIGHTS = { price: 35, mileage: 25, year: 20, location: 5 };
 
 const QUICK_FILTERS = [
   {
@@ -569,8 +569,6 @@ function computeAutoScore(car) {
   if (car.price) score += Math.max(0, W.price * (1 - car.price / 15_000_000));
   if (car.mileage != null) score += Math.max(0, W.mileage * (1 - car.mileage / 300_000));
   if (car.year) score += Math.max(0, Math.min(W.year, (car.year - 2010) / 16 * W.year));
-  score += Math.min(W.top5, (car.top5 || []).length * (W.top5 / 5));
-  score += Math.min(W.equipment, Math.floor((car.equipment || []).length / 5));
   const loc = (car.sellerLocation || '').toLowerCase();
   if (loc.includes('budapest') || loc.includes('pest')) score += W.location;
   const fuel = (car.fuel || '').toLowerCase();
@@ -787,8 +785,6 @@ function populateCard(card, car) {
         const pPrice  = car.price    ? Math.max(0, W.price   * (1 - car.price / 15_000_000)).toFixed(1)  : '—';
         const pKm     = car.mileage != null ? Math.max(0, W.mileage * (1 - car.mileage / 300_000)).toFixed(1) : '—';
         const pYear   = car.year     ? Math.max(0, Math.min(W.year, (car.year - 2010) / 16 * W.year)).toFixed(1) : '—';
-        const pTop5   = Math.min(W.top5, (car.top5 || []).length * (W.top5 / 5)).toFixed(1);
-        const pEquip  = Math.min(W.equipment, Math.floor((car.equipment || []).length / 5)).toFixed(1);
         const locLow  = (car.sellerLocation || '').toLowerCase();
         const pLoc    = (locLow.includes('budapest') || locLow.includes('pest')) ? `+${W.location}` : null;
         const fuelLow = (car.fuel || '').toLowerCase();
