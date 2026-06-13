@@ -1387,7 +1387,7 @@ body {
 
 /* ── Personal ranking modal ─────────────────────────────── */
 .prm-box {
-  max-width: 520px;
+  max-width: 680px;
   width: 95%;
   max-height: 90vh;
   display: flex;
@@ -1446,23 +1446,70 @@ body {
 }
 .prm-item {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 6px 10px;
+  overflow: hidden;
   user-select: none;
   transition: box-shadow var(--transition), border-color var(--transition);
 }
 .prm-item.sortable-chosen { box-shadow: var(--shadow-hover); border-color: var(--primary); }
-.prm-pos {
-  min-width: 22px;
+.prm-item-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+}
+.prm-pos-input {
+  width: 32px;
+  text-align: center;
   font-size: 0.78rem;
   font-weight: 700;
   color: var(--text-dim);
-  text-align: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 2px 2px;
   flex-shrink: 0;
+  font-family: inherit;
+  transition: border-color .12s, background .12s;
+  -moz-appearance: textfield;
+}
+.prm-pos-input::-webkit-inner-spin-button,
+.prm-pos-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+.prm-pos-input:hover { border-color: var(--border); background: var(--bg); }
+.prm-pos-input:focus { outline: none; border-color: var(--primary); background: var(--bg); color: var(--text); }
+.prm-highlights-btn {
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-family: inherit;
+  flex-shrink: 0;
+  transition: color .12s, border-color .12s;
+  white-space: nowrap;
+}
+.prm-highlights-btn:hover { color: var(--primary); border-color: var(--primary); }
+.prm-highlights {
+  display: none;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 6px 10px 8px 52px;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+}
+.prm-highlights.open { display: flex; }
+.prm-highlight-tag {
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: var(--primary-glow, rgba(99,102,241,.1));
+  color: var(--primary);
+  border: 1px solid rgba(99,102,241,.2);
 }
 .prm-thumb {
   width: 56px;
@@ -1581,42 +1628,48 @@ body {
 
 /* Search bar */
 .search-bar-wrap {
-  padding: 0 24px 0;
-  max-width: 960px;
-  margin: 0 auto;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  transition: background .2s, border-color .2s;
 }
 .search-bar-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 10px 24px;
+}
+.search-input-wrap {
   position: relative;
   display: flex;
   align-items: center;
 }
 .search-ic {
   position: absolute;
-  left: 14px;
-  width: 18px;
-  height: 18px;
+  left: 12px;
+  width: 15px;
+  height: 15px;
   color: var(--text-secondary);
   pointer-events: none;
   flex-shrink: 0;
+  opacity: .5;
 }
 .global-search-input {
   width: 100%;
-  background: var(--surface);
+  background: var(--bg);
   border: 1.5px solid var(--border);
-  border-radius: 12px;
+  border-radius: 8px;
   color: var(--text-primary);
   font-family: inherit;
-  font-size: 0.92rem;
-  padding: 11px 16px 11px 42px;
+  font-size: 0.875rem;
+  padding: 8px 14px 8px 38px;
   box-sizing: border-box;
   transition: border-color .15s, box-shadow .15s;
 }
 .global-search-input:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(99,102,241,.15);
+  box-shadow: 0 0 0 3px rgba(99,102,241,.12);
 }
-.global-search-input::placeholder { color: var(--text-secondary); opacity: .7; }
+.global-search-input::placeholder { color: var(--text-secondary); opacity: .6; }
 
 /* Manual add form */
 .manual-add-toggle-row { margin-top: 10px; }

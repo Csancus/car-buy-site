@@ -112,6 +112,8 @@ let activeQuickFilters  = new Set();
 let activeAttrFilters   = {};     // { fuel, transmission, condition, yearFrom, yearTo }
 let activeFeatureFilters = new Set();
 let activeSearch = '';
+let activeStatusFilters = new Set(['active', 'top']);
+let statusFilterOpen = false;
 
 const SCORE_WEIGHTS = { price: 30, mileage: 25, year: 20, top5: 15, equipment: 10, location: 5 };
 
@@ -723,6 +725,13 @@ function updateCard(card, car) {
 }
 
 function populateCard(card, car) {
+  // Status classes
+  const status = car.status || 'active';
+  card.classList.toggle('is-top', status === 'top');
+  card.classList.toggle('is-archived', status === 'archived');
+  const statusSel = card.querySelector('.status-select');
+  if (statusSel) statusSel.value = status;
+
   // Summary thumbnail
   const summaryImg = card.querySelector('.summary-img');
   const thumbPh = card.querySelector('.thumb-placeholder');
@@ -1147,16 +1156,26 @@ function attachCardEvents(card, car) {
     this.textContent = isHidden ? 'Kevesebb mutatása' : 'Összes felszereltség mutatása';
   });
 
-  // Delete
-  card.querySelector('.btn-delete').addEventListener('click', async () => {
-    if (await showConfirm(`Biztosan törlöd ezt a hirdetést?\n${car.name}`)) {
-      await apiDeleteCar(carId);
-      cars = cars.filter(c => c.id !== carId);
-      cars.forEach((c, i) => { c.order = i; });
-      saveToStorage();
-      renderAll();
-      renderCompareTable();
-    }
+  // Archive button (quick archive)
+  card.querySelector('.btn-archive').addEventListener('click', async () => {
+    const c = getCarById(carId);
+    if (!c) return;
+    c.status = 'archived';
+    saveToStorage();
+    populateCard(card, c);
+    applyFilters();
+    await apiUpdateCar(carId, { status: 'archived' });
+  });
+
+  // Status dropdown
+  card.querySelector('.status-select').addEventListener('change', async (e) => {
+    const c = getCarById(carId);
+    if (!c) return;
+    c.status = e.target.value;
+    saveToStorage();
+    populateCard(card, c);
+    applyFilters();
+    await apiUpdateCar(carId, { status: c.status });
   });
 
   // Personal rankings form
@@ -1273,6 +1292,44 @@ function renderFilterBar() {
   const rowAttr = document.getElementById('filterRowAttr');
   if (rowAttr) {
     rowAttr.innerHTML = '';
+
+    // Status checkbox dropdown
+    const statusLabels = { active: '✅ Aktív', top: '⭐ Top', archived: '📦 Archivált' };
+    const statusWrap = document.createElement('div');
+    statusWrap.className = 'status-filter-wrap';
+    statusWrap.addEventListener('click', e => e.stopPropagation());
+
+    const activeNames = [...activeStatusFilters].map(s => statusLabels[s]).join(', ') || 'Nincs';
+    const statusBtn = document.createElement('button');
+    statusBtn.className = 'filter-attr-select status-filter-btn';
+    statusBtn.textContent = `Státusz: ${activeNames}`;
+    statusBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      statusFilterOpen = !statusFilterOpen;
+      statusPanel.style.display = statusFilterOpen ? 'block' : 'none';
+    });
+
+    const statusPanel = document.createElement('div');
+    statusPanel.className = 'status-filter-panel';
+    statusPanel.style.display = statusFilterOpen ? 'block' : 'none';
+    for (const [val, lbl] of [['active', '✅ Aktív'], ['top', '⭐ Top'], ['archived', '📦 Archivált']]) {
+      const row = document.createElement('label');
+      row.className = 'status-filter-option';
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.checked = activeStatusFilters.has(val);
+      cb.addEventListener('change', () => {
+        if (cb.checked) activeStatusFilters.add(val);
+        else activeStatusFilters.delete(val);
+        applyFilters(); renderFilterBar();
+      });
+      row.appendChild(cb);
+      row.append(' ' + lbl);
+      statusPanel.appendChild(row);
+    }
+    statusWrap.appendChild(statusBtn);
+    statusWrap.appendChild(statusPanel);
+    rowAttr.appendChild(statusWrap);
 
     // Brand dropdown
     const brands = [...new Set(cars.map(c => c.brand).filter(Boolean))].sort();
@@ -1444,6 +1501,8 @@ function applyFilters() {
     const car = cars.find(c => String(c.id) === String(cardEl.dataset.id));
     if (!car) { cardEl.style.display = 'none'; continue; }
     let v = true;
+    // Status filter
+    if (v) v = activeStatusFilters.has(car.status || 'active');
     if (v && activeSearch) {
       const q = activeSearch.toLowerCase();
       const hay = [car.name, car.brand, car.model, car.fuel, car.transmission, car.sellerLocation,
@@ -1900,6 +1959,15 @@ async function init() {
     });
   }
 
+  // Close status filter panel on outside click
+  document.addEventListener('click', () => {
+    if (statusFilterOpen) {
+      statusFilterOpen = false;
+      const panel = document.querySelector('.status-filter-panel');
+      if (panel) panel.style.display = 'none';
+    }
+  });
+
   // Manual add toggle
   document.getElementById('btnManualToggle').addEventListener('click', () => {
     const form = document.getElementById('manualForm');
@@ -2051,20 +2119,52 @@ async function init() {
       li.dataset.id = car.id;
       const thumb = car.images && car.images[0] ? escHtml(car.images[0]) : '';
       const price = car.price ? car.price.toLocaleString('hu-HU') + ' Ft' : '';
+      const top5 = car.top5 || [];
       li.innerHTML =
-        `<span class="prm-pos">${i + 1}</span>` +
+        '<div class="prm-item-main">' +
+        `<input class="prm-pos-input" type="number" value="${i + 1}" min="1" max="${sorted.length}" />` +
         (thumb ? `<img class="prm-thumb" src="${thumb}" loading="lazy" />` : '<div class="prm-thumb-empty"></div>') +
         `<span class="prm-car-name">${escHtml(car.name || 'Ismeretlen')}</span>` +
         (price ? `<span class="prm-car-price">${escHtml(price)}</span>` : '') +
-        `<span class="prm-drag-handle">⠿⠿</span>`;
+        (top5.length ? '<button class="prm-highlights-btn" type="button">&#9660; kiemelések</button>' : '') +
+        '<span class="prm-drag-handle">⠿⠿</span>' +
+        '</div>' +
+        (top5.length ? `<div class="prm-highlights">${top5.map(h => `<span class="prm-highlight-tag">${escHtml(h)}</span>`).join('')}</div>` : '');
       list.appendChild(li);
+
+      const posInput = li.querySelector('.prm-pos-input');
+      posInput.addEventListener('change', () => {
+        const n = list.querySelectorAll('.prm-item').length;
+        const targetPos = Math.max(1, Math.min(n, parseInt(posInput.value, 10) || 1));
+        posInput.value = targetPos;
+        const allItems = [...list.querySelectorAll('.prm-item')];
+        const currentIdx = allItems.indexOf(li);
+        const targetIdx = targetPos - 1;
+        if (currentIdx !== targetIdx) {
+          allItems.splice(currentIdx, 1);
+          allItems.splice(targetIdx, 0, li);
+          allItems.forEach(item => list.appendChild(item));
+        }
+        list.querySelectorAll('.prm-item').forEach((item, idx) => {
+          item.querySelector('.prm-pos-input').value = idx + 1;
+        });
+      });
+
+      const hlBtn = li.querySelector('.prm-highlights-btn');
+      const hlDiv = li.querySelector('.prm-highlights');
+      if (hlBtn && hlDiv) {
+        hlBtn.addEventListener('click', () => {
+          hlDiv.classList.toggle('open');
+          hlBtn.textContent = hlDiv.classList.contains('open') ? '▲ kiemelések' : '▼ kiemelések';
+        });
+      }
     });
     prmSortable = Sortable.create(list, {
       animation: 150,
       handle: '.prm-drag-handle',
       onEnd: () => {
-        list.querySelectorAll('.prm-item').forEach((li, i) => {
-          li.querySelector('.prm-pos').textContent = i + 1;
+        list.querySelectorAll('.prm-item').forEach((item, i) => {
+          item.querySelector('.prm-pos-input').value = i + 1;
         });
       },
     });

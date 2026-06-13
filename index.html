@@ -107,8 +107,10 @@
   <!-- Search bar -->
   <div class="search-bar-wrap" id="searchBarWrap" style="display:none">
     <div class="search-bar-inner">
-      <svg class="ic search-ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      <input type="search" id="globalSearch" class="global-search-input" placeholder="Keresés névben, márkában, felszereltségben..." autocomplete="off" />
+      <div class="search-input-wrap">
+        <svg class="ic search-ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="search" id="globalSearch" class="global-search-input" placeholder="Keresés névben, márkában, felszereltségben..." autocomplete="off" />
+      </div>
     </div>
   </div>
 
@@ -442,7 +444,7 @@
         <input type="text" id="prmNameInput" class="prm-name-input" placeholder="Pl. Csanád" autocomplete="off" />
         <div id="prmExistingNames" class="prm-existing-names"></div>
       </div>
-      <p class="prm-hint">Húzd át az autókat a kívánt sorrendbe:</p>
+      <p class="prm-hint">Húzd át vagy írd be a sorszámot:</p>
       <ul id="prmList" class="prm-list"></ul>
       <div class="modal-actions prm-actions">
         <button class="btn btn-ghost btn-sm" id="btnCancelPrm">Mégse</button>
