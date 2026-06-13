@@ -143,6 +143,14 @@ async function apiSaveOrder(ids) {
   });
 }
 
+async function apiUpdateCar(id, fields) {
+  await fetch(`/api/cars?id=${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(fields),
+  });
+}
+
 async function apiLoadCars() {
   const resp = await fetch('/api/cars');
   const text = await resp.text();
@@ -545,7 +553,14 @@ function populateCard(card, car) {
 
   // Seller
   const sellerTypeEl = card.querySelector('.seller-type-val');
-  if (sellerTypeEl) sellerTypeEl.textContent = car.sellerType === 'private' ? 'Magánszemély' : (car.sellerName || car.sellerType || '—');
+  if (sellerTypeEl) {
+    const autoType = car.sellerType === 'private' ? 'Magánszemély' : (car.sellerName || car.sellerType || '—');
+    sellerTypeEl.textContent = autoType;
+  }
+  // Seller label buttons: reflect saved sellerLabel
+  card.querySelectorAll('.btn-seller-lbl').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.val === (car.sellerLabel ?? ''));
+  });
   const sellerLocEl = card.querySelector('.seller-location');
   if (sellerLocEl) sellerLocEl.textContent = car.sellerLocation || '—';
   const phoneEl = card.querySelector('.seller-phone');
@@ -585,6 +600,19 @@ function escHtml(str) {
 
 function attachCardEvents(card, car) {
   const carId = car.id;
+
+  // Seller label toggle
+  card.querySelectorAll('.btn-seller-lbl').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const val = btn.dataset.val;
+      const c = getCarById(carId);
+      if (!c) return;
+      c.sellerLabel = val;
+      saveToStorage();
+      card.querySelectorAll('.btn-seller-lbl').forEach(b => b.classList.toggle('active', b.dataset.val === val));
+      await apiUpdateCar(carId, { sellerLabel: val });
+    });
+  });
 
   // Expand / collapse
   card.querySelector('.btn-expand').addEventListener('click', () => {

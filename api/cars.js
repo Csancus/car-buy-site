@@ -6,7 +6,7 @@ module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
   if (req.method === 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, PATCH, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     return res.status(200).end();
   }
@@ -48,6 +48,18 @@ module.exports = async (req, res) => {
       let cars = await loadCars();
       cars = cars.filter(c => String(c.id) !== String(id));
       cars.forEach((c, i) => { c.order = i; });
+      await saveCars(cars);
+      return res.status(200).json({ ok: true });
+    }
+
+    if (req.method === 'PATCH') {
+      const id = req.query && req.query.id;
+      if (!id) return res.status(400).json({ error: 'ID megadása kötelező' });
+      const cars = await loadCars();
+      const car = cars.find(c => String(c.id) === String(id));
+      if (!car) return res.status(404).json({ error: 'Hirdetés nem található' });
+      const { sellerLabel } = req.body || {};
+      if (sellerLabel !== undefined) car.sellerLabel = sellerLabel;
       await saveCars(cars);
       return res.status(200).json({ ok: true });
     }

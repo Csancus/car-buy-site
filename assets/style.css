@@ -783,3 +783,19 @@ body {
 .seller-type-val, .seller-location { color: var(--text); }
 .seller-phone { color: var(--primary); text-decoration: none; font-weight: 500; }
 .seller-phone:hover { text-decoration: underline; }
+
+.seller-label-btns { display: flex; gap: 4px; flex-wrap: wrap; }
+.btn-seller-lbl {
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 3px 9px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background var(--transition), color var(--transition), border-color var(--transition);
+}
+.btn-seller-lbl:hover { border-color: var(--primary); color: var(--primary); }
+.btn-seller-lbl.active { background: var(--primary); color: #fff; border-color: var(--primary); }
