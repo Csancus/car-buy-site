@@ -657,7 +657,9 @@ body {
     padding: 6px 0;
   }
   .filter-chips-divider { display: none; }
-  .filter-controls-row { gap: 5px; flex-wrap: wrap; }
+  .filter-controls-row { gap: 5px; flex-wrap: wrap; align-items: center; }
+  #filterRowAttr { display: flex; flex-wrap: wrap; gap: 5px; }
+  .filter-attr-select { max-width: 130px; overflow: hidden; text-overflow: ellipsis; }
   /* Search row: 2 lines on mobile */
   .filter-search-row { flex-wrap: wrap; gap: 6px; }
   .filter-search-row .search-input-wrap--hero { width: 100%; order: 1; }
