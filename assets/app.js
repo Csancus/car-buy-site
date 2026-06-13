@@ -14,6 +14,8 @@ const STORAGE_KEY = 'carbuy_cars';
 // State
 // ============================================================
 let cars = [];
+let autoRanks = {};
+let activePersonFilter = null;
 
 // ============================================================
 // Utils
@@ -302,6 +304,25 @@ function extractIdFromUrl(url) {
 }
 
 // ============================================================
+// Auto Ranking
+// ============================================================
+function computeAutoScore(car) {
+  let score = 0;
+  if (car.price) score += Math.max(0, 30 * (1 - car.price / 15_000_000));
+  if (car.mileage != null) score += Math.max(0, 25 * (1 - car.mileage / 300_000));
+  if (car.year) score += Math.max(0, Math.min(20, (car.year - 2010) / 16 * 20));
+  score += Math.min(15, (car.top5 || []).length * 3);
+  score += Math.min(10, Math.floor((car.equipment || []).length / 5));
+  return score;
+}
+
+function refreshAutoRanks() {
+  const sorted = [...cars].sort((a, b) => computeAutoScore(b) - computeAutoScore(a));
+  autoRanks = {};
+  sorted.forEach((car, i) => { autoRanks[String(car.id)] = i + 1; });
+}
+
+// ============================================================
 // Top 5 Algorithm
 // ============================================================
 function computeTop5(car) {
@@ -383,17 +404,17 @@ function renderAll() {
   const empty = document.getElementById('emptyState');
 
   cars.sort((a, b) => a.order - b.order);
+  refreshAutoRanks();
 
   if (cars.length === 0) {
     empty.style.display = 'block';
     grid.innerHTML = '';
+    renderFilterBar();
     return;
   }
 
   empty.style.display = 'none';
 
-  // Diff render: remove cards that no longer exist, add new ones
-  const existingIds = new Set([...grid.querySelectorAll('.car-card')].map(el => el.dataset.id));
   const currentIds = new Set(cars.map(c => String(c.id)));
 
   // Remove deleted cards
@@ -413,6 +434,9 @@ function renderAll() {
     fragment.appendChild(cardEl);
   }
   grid.appendChild(fragment);
+
+  applyPersonFilter();
+  renderFilterBar();
 }
 
 function buildCard(car) {
@@ -432,17 +456,34 @@ function populateCard(card, car) {
   // Summary thumbnail
   const summaryImg = card.querySelector('.summary-img');
   const thumbPh = card.querySelector('.thumb-placeholder');
+  const summaryCounter = card.querySelector('.summary-img-counter');
   if (car.images && car.images.length > 0) {
-    summaryImg.src = car.images[0];
+    const sIdx = Math.min(parseInt(card.dataset.imgIdx || '0', 10), car.images.length - 1);
+    summaryImg.src = car.images[sIdx];
     summaryImg.alt = car.name;
     if (thumbPh) thumbPh.style.display = 'none';
+    if (summaryCounter) summaryCounter.textContent = car.images.length > 1 ? `${sIdx + 1}/${car.images.length}` : '';
   } else {
     summaryImg.removeAttribute('src');
     if (thumbPh) thumbPh.style.display = 'flex';
+    if (summaryCounter) summaryCounter.textContent = '';
   }
 
   const btnListing = card.querySelector('.btn-listing');
   if (btnListing) btnListing.href = car.url;
+
+  // Auto rank badge
+  const rankBadge = card.querySelector('.auto-rank-badge');
+  if (rankBadge) {
+    const rank = autoRanks[String(car.id)];
+    if (rank && cars.length > 1) {
+      rankBadge.textContent = `#${rank}`;
+      rankBadge.style.display = 'inline';
+      rankBadge.className = `auto-rank-badge rank-${rank <= 3 ? rank : 'other'}`;
+    } else {
+      rankBadge.style.display = 'none';
+    }
+  }
 
   // Name + price
   card.querySelector('.car-name').textContent = car.name || 'Ismeretlen';
@@ -459,6 +500,11 @@ function populateCard(card, car) {
   setSum('.sum-km', car.mileage != null ? `🛣 ${formatMileage(car.mileage)}` : '');
   setSum('.sum-fuel', car.fuel ? `⛽ ${car.fuel}` : '');
   setSum('.sum-condition', car.condition || '');
+
+  // Condition label buttons
+  card.querySelectorAll('.btn-cond-lbl').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.val === (car.carConditionLabel ?? 'used'));
+  });
 
   // Detail slideshow
   const img = card.querySelector('.slideshow-img');
@@ -571,8 +617,29 @@ function populateCard(card, car) {
     phoneEl.style.color = phone ? '' : 'var(--text-dim)';
   }
 
+  // Personal rankings
+  renderRankings(card, car);
+
   // Comments
   renderComments(card, car);
+}
+
+function renderRankings(card, car) {
+  const list = card.querySelector('.rankings-list');
+  if (!list) return;
+  list.innerHTML = '';
+  for (const r of (car.rankings || [])) {
+    const li = document.createElement('li');
+    li.className = 'ranking-item';
+    li.innerHTML = `
+      <span class="ranking-pos">#${r.position}</span>
+      <span class="ranking-name">${escHtml(r.name)}</span>
+      <button class="btn-ranking-delete" data-name="${escHtml(r.name)}" title="Törlés">
+        <svg class="ic" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    `;
+    list.appendChild(li);
+  }
 }
 
 function renderComments(card, car) {
@@ -600,6 +667,19 @@ function escHtml(str) {
 
 function attachCardEvents(card, car) {
   const carId = car.id;
+
+  // Condition label toggle
+  card.querySelectorAll('.btn-cond-lbl').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const val = btn.dataset.val;
+      const c = getCarById(carId);
+      if (!c) return;
+      c.carConditionLabel = val;
+      saveToStorage();
+      card.querySelectorAll('.btn-cond-lbl').forEach(b => b.classList.toggle('active', b.dataset.val === val));
+      await apiUpdateCar(carId, { carConditionLabel: val });
+    });
+  });
 
   // Seller label toggle
   card.querySelectorAll('.btn-seller-lbl').forEach(btn => {
@@ -704,6 +784,42 @@ function attachCardEvents(card, car) {
     }
   });
 
+  // Personal rankings form
+  card.querySelector('.ranking-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const nameEl = card.querySelector('.ranking-input-name');
+    const posEl = card.querySelector('.ranking-input-pos');
+    const name = nameEl.value.trim();
+    const position = parseInt(posEl.value, 10);
+    if (!name || !position) return;
+    const c = getCarById(carId);
+    if (!c) return;
+    if (!c.rankings) c.rankings = [];
+    c.rankings = c.rankings.filter(r => r.name !== name);
+    c.rankings.push({ name, position });
+    c.rankings.sort((a, b) => a.position - b.position);
+    saveToStorage();
+    renderRankings(card, c);
+    renderFilterBar();
+    await apiUpdateCar(carId, { rankings: c.rankings });
+    nameEl.value = '';
+    posEl.value = '';
+  });
+
+  // Personal ranking delete (delegated)
+  card.querySelector('.rankings-list').addEventListener('click', async (e) => {
+    const btn = e.target.closest('.btn-ranking-delete');
+    if (!btn) return;
+    const name = btn.dataset.name;
+    const c = getCarById(carId);
+    if (!c) return;
+    c.rankings = (c.rankings || []).filter(r => r.name !== name);
+    saveToStorage();
+    renderRankings(card, c);
+    renderFilterBar();
+    await apiUpdateCar(carId, { rankings: c.rankings });
+  });
+
   // Comment form
   card.querySelector('.comment-form').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -727,6 +843,52 @@ function attachCardEvents(card, car) {
 
 function getCarById(id) {
   return cars.find(c => c.id === id);
+}
+
+// ============================================================
+// Filter Bar
+// ============================================================
+function renderFilterBar() {
+  const filterBar = document.getElementById('filterBar');
+  const pillsContainer = document.getElementById('filterPills');
+  if (!filterBar || !pillsContainer) return;
+
+  const names = new Set();
+  for (const car of cars) {
+    for (const r of (car.rankings || [])) {
+      if (r.name) names.add(r.name);
+    }
+  }
+
+  filterBar.style.display = (cars.length > 0) ? '' : 'none';
+  pillsContainer.innerHTML = '';
+
+  for (const name of [...names].sort()) {
+    const pill = document.createElement('button');
+    pill.className = 'filter-pill' + (activePersonFilter === name ? ' active' : '');
+    pill.innerHTML = escHtml(name) + (activePersonFilter === name ? ' <span class="pill-x">×</span>' : '');
+    pill.addEventListener('click', () => {
+      activePersonFilter = (activePersonFilter === name) ? null : name;
+      applyPersonFilter();
+      renderFilterBar();
+    });
+    pillsContainer.appendChild(pill);
+  }
+}
+
+function applyPersonFilter() {
+  const grid = document.getElementById('carsGrid');
+  if (!grid) return;
+  for (const cardEl of grid.querySelectorAll('.car-card')) {
+    if (!activePersonFilter) {
+      cardEl.style.display = '';
+      continue;
+    }
+    const carId = cardEl.dataset.id;
+    const car = cars.find(c => String(c.id) === String(carId));
+    const hasFilter = car && (car.rankings || []).some(r => r.name === activePersonFilter);
+    cardEl.style.display = hasFilter ? '' : 'none';
+  }
 }
 
 // ============================================================
@@ -1065,6 +1227,18 @@ async function init() {
 
   // Theme toggle
   document.getElementById('btnTheme').addEventListener('click', toggleTheme);
+
+  // Rank info modal
+  const rankInfoModal = document.getElementById('rankInfoModal');
+  document.getElementById('btnRankInfo').addEventListener('click', () => {
+    rankInfoModal.classList.add('visible');
+  });
+  document.getElementById('rankInfoClose').addEventListener('click', () => {
+    rankInfoModal.classList.remove('visible');
+  });
+  rankInfoModal.addEventListener('click', (e) => {
+    if (e.target === rankInfoModal) rankInfoModal.classList.remove('visible');
+  });
 
   // SortableJS
   initSortable();

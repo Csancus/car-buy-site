@@ -632,6 +632,23 @@ body {
 }
 .btn-modal-confirm:hover { background: rgba(220,38,38,.18); box-shadow: 0 0 14px rgba(220,38,38,.2); }
 
+/* ── Summary image counter & tap navigation ─────────────── */
+.summary-img-counter {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  background: rgba(0,0,0,.55);
+  backdrop-filter: blur(4px);
+  color: rgba(255,255,255,.85);
+  font-size: 0.62rem;
+  padding: 1px 7px;
+  border-radius: 20px;
+  pointer-events: none;
+  border: 1px solid rgba(255,255,255,.08);
+}
+.summary-img-counter:empty { display: none; }
+.summary-thumb-wrap.has-multiple { cursor: pointer; touch-action: pan-y; }
+
 /* ── Responsive ─────────────────────────────────────────── */
 @media (max-width: 640px) {
   .header-inner  { flex-direction: column; align-items: flex-start; }
@@ -639,6 +656,29 @@ body {
   .cars-grid     { grid-template-columns: 1fr; padding: 14px; gap: 14px; }
   .input-group   { flex-direction: column; }
   .add-car-section { padding: 14px 16px; }
+
+  /* Compact list view on mobile */
+  .view-list .card-summary { padding: 8px 10px; gap: 8px; }
+  .view-list .summary-thumb-wrap { width: 100px; height: 66px; }
+  .view-list .car-price { font-size: 1rem; margin-bottom: 4px; }
+  .view-list .car-name { font-size: 0.875rem; }
+  .view-list .card-header-row { margin-bottom: 4px; }
+  .view-list .summary-specs { margin: 3px 0 5px; gap: 3px; }
+  .view-list .sum-badge { font-size: 0.67rem; padding: 1px 7px; }
+  .view-list .summary-footer { gap: 4px; }
+  .view-list .btn-listing,
+  .view-list .btn-expand { font-size: 0.72rem; padding: 3px 8px; }
+  .view-list .btn-order,
+  .view-list .btn-delete { width: 24px; height: 24px; }
+
+  /* Compare table: compact + allow word wrap */
+  .compare-inner { padding: 14px; }
+  .compare-table { font-size: 0.77rem; min-width: 0; }
+  .compare-table th,
+  .compare-table td { padding: 7px 9px; white-space: normal; word-break: break-word; max-width: 120px; }
+  .compare-table thead th { font-size: 0.68rem; }
+  .compare-table tbody td:first-child,
+  .compare-table thead th:first-child { min-width: 80px; max-width: 90px; }
 }
 
 @media (max-width: 480px) {
@@ -799,3 +839,161 @@ body {
 }
 .btn-seller-lbl:hover { border-color: var(--primary); color: var(--primary); }
 .btn-seller-lbl.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+/* ── Auto rank badge ────────────────────────────────────── */
+.car-name-area { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; }
+.car-name-area .car-name { flex: 1; }
+
+.auto-rank-badge {
+  flex-shrink: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 20px;
+  border: 1px solid;
+  white-space: nowrap;
+  letter-spacing: .02em;
+}
+.auto-rank-badge.rank-1 { background: rgba(234,179,8,.15); color: #b45309; border-color: rgba(234,179,8,.4); }
+.auto-rank-badge.rank-2 { background: rgba(148,163,184,.12); color: #475569; border-color: rgba(148,163,184,.4); }
+.auto-rank-badge.rank-3 { background: rgba(180,100,50,.12); color: #92400e; border-color: rgba(180,100,50,.4); }
+.auto-rank-badge.rank-other { background: var(--bg-elevated); color: var(--text-dim); border-color: var(--border); }
+
+/* ── Filter bar ─────────────────────────────────────────── */
+.filter-bar {
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  transition: background .2s, border-color .2s;
+}
+.filter-bar-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.filter-label { font-size: 0.775rem; color: var(--text-dim); white-space: nowrap; }
+
+.filter-pills { display: flex; gap: 5px; flex-wrap: wrap; flex: 1; }
+
+.filter-pill {
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background var(--transition), color var(--transition), border-color var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.filter-pill:hover { border-color: var(--primary); color: var(--primary); }
+.filter-pill.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.filter-pill .pill-x { font-size: 0.85rem; line-height: 1; opacity: .75; }
+
+/* ── Condition label ────────────────────────────────────── */
+.cond-label-btns { display: flex; gap: 4px; }
+.btn-cond-lbl {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background var(--transition), color var(--transition), border-color var(--transition);
+  white-space: nowrap;
+}
+.btn-cond-lbl:hover { border-color: var(--border-mid); color: var(--text); }
+.btn-cond-lbl[data-val="new"].active { background: var(--green-bg); color: var(--green); border-color: rgba(22,163,74,.3); }
+.btn-cond-lbl[data-val="used"].active { background: var(--bg-elevated); color: var(--text-muted); border-color: var(--border-mid); font-weight: 500; }
+
+/* ── Personal rankings ──────────────────────────────────── */
+.rankings-section { margin-bottom: 16px; }
+
+.rankings-list { list-style: none; display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+
+.ranking-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  font-size: 0.8rem;
+}
+.ranking-pos {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--primary);
+  min-width: 28px;
+  text-align: center;
+  background: rgba(124,58,237,.1);
+  border: 1px solid rgba(124,58,237,.2);
+  border-radius: 20px;
+  padding: 1px 6px;
+  flex-shrink: 0;
+}
+.ranking-name { flex: 1; color: var(--text); font-weight: 500; }
+.btn-ranking-delete {
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  transition: background var(--transition), color var(--transition);
+  font-family: inherit;
+}
+.btn-ranking-delete svg { width: 13px; height: 13px; }
+.btn-ranking-delete:hover { background: var(--red-bg); color: var(--red); }
+
+.ranking-form { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.ranking-inputs { display: flex; gap: 5px; flex: 1; min-width: 0; }
+
+.ranking-input-name,
+.ranking-input-pos {
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--bg);
+  transition: border-color var(--transition), box-shadow var(--transition), background .2s;
+}
+.ranking-input-name { flex: 1; min-width: 80px; }
+.ranking-input-pos { width: 60px; flex-shrink: 0; }
+.ranking-input-name:focus,
+.ranking-input-pos:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
+.ranking-input-name::placeholder,
+.ranking-input-pos::placeholder { color: var(--text-dim); }
+
+/* ── Rank info modal list ───────────────────────────────── */
+.rank-info-list { list-style: none; margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
+.rank-info-list li { display: flex; align-items: center; gap: 8px; font-size: 0.825rem; color: var(--text-muted); }
+.rank-info-pts {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 20px;
+  background: rgba(124,58,237,.1);
+  color: var(--primary);
+  border: 1px solid rgba(124,58,237,.2);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
