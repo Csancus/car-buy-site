@@ -1272,44 +1272,53 @@ function attachCardEvents(card, car) {
   });
 
   // Available toggle
-  card.querySelector('.btn-avail').addEventListener('click', async () => {
-    const c = getCarById(carId);
-    if (!c) return;
-    c.available = c.available === false ? true : false;
-    saveToStorage();
-    populateCard(card, c);
-    applyFilters();
-    await apiUpdateCar(carId, { available: c.available });
-  });
+  const btnAvail = card.querySelector('.btn-avail');
+  if (btnAvail) {
+    btnAvail.addEventListener('click', async () => {
+      const c = getCarById(carId);
+      if (!c) return;
+      c.available = c.available === false ? true : false;
+      saveToStorage();
+      populateCard(card, c);
+      applyFilters();
+      await apiUpdateCar(carId, { available: c.available });
+    });
+  }
 
   // Extra link — add button
   const btnAddLink = card.querySelector('.btn-add-link');
   const addLinkForm = card.querySelector('.add-link-form');
   const addLinkInput = card.querySelector('.add-link-input');
-  btnAddLink.addEventListener('click', () => {
-    btnAddLink.style.display = 'none';
-    addLinkForm.style.display = 'flex';
-    addLinkInput.value = '';
-    addLinkInput.focus();
-  });
-  card.querySelector('.btn-add-link-cancel').addEventListener('click', () => {
-    addLinkForm.style.display = 'none';
-    btnAddLink.style.display = '';
-  });
-  const confirmAddLink = async () => {
-    const url = addLinkInput.value.trim();
-    if (!url) return;
-    const c = getCarById(carId);
-    if (!c) return;
-    c.extraLinks = [...(c.extraLinks || []), url];
-    saveToStorage();
-    populateCard(card, c);
-    addLinkForm.style.display = 'none';
-    btnAddLink.style.display = '';
-    await apiUpdateCar(carId, { extraLinks: c.extraLinks });
-  };
-  card.querySelector('.btn-add-link-ok').addEventListener('click', confirmAddLink);
-  addLinkInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') confirmAddLink(); if (e.key === 'Escape') { addLinkForm.style.display = 'none'; btnAddLink.style.display = ''; } });
+  if (btnAddLink && addLinkForm && addLinkInput) {
+    btnAddLink.addEventListener('click', () => {
+      btnAddLink.style.display = 'none';
+      addLinkForm.style.display = 'flex';
+      addLinkInput.value = '';
+      addLinkInput.focus();
+    });
+    const btnAddLinkCancel = card.querySelector('.btn-add-link-cancel');
+    if (btnAddLinkCancel) {
+      btnAddLinkCancel.addEventListener('click', () => {
+        addLinkForm.style.display = 'none';
+        btnAddLink.style.display = '';
+      });
+    }
+    const confirmAddLink = async () => {
+      const url = addLinkInput.value.trim();
+      if (!url) return;
+      const c = getCarById(carId);
+      if (!c) return;
+      c.extraLinks = [...(c.extraLinks || []), url];
+      saveToStorage();
+      populateCard(card, c);
+      addLinkForm.style.display = 'none';
+      btnAddLink.style.display = '';
+      await apiUpdateCar(carId, { extraLinks: c.extraLinks });
+    };
+    const btnAddLinkOk = card.querySelector('.btn-add-link-ok');
+    if (btnAddLinkOk) btnAddLinkOk.addEventListener('click', confirmAddLink);
+    addLinkInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') confirmAddLink(); if (e.key === 'Escape') { addLinkForm.style.display = 'none'; btnAddLink.style.display = ''; } });
+  }
 
   // Archive button (quick archive)
   card.querySelector('.btn-archive').addEventListener('click', async () => {
