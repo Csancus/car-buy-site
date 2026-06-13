@@ -397,8 +397,12 @@ body {
 
 .card-order-btns { display: flex; align-items: center; gap: 3px; flex-shrink: 0; }
 
+.cars-grid:not(.view-list) .summary-body { position: relative; }
 
 .btn-archive {
+  position: absolute;
+  top: 10px;
+  right: 10px;
   width: 26px;
   height: 26px;
   border: 1px solid var(--border);
