@@ -1433,7 +1433,7 @@ let _editingCarId = null;
 function openEditModal(car) {
   _editingCarId = car.id;
   const modal = document.getElementById('editCarModal');
-  modal.style.display = 'flex';
+  modal.classList.add('visible');
   modal.querySelectorAll('[data-field]').forEach(el => {
     const field = el.dataset.field;
     if (field === 'images') {
@@ -1450,7 +1450,7 @@ function openEditModal(car) {
 
 function closeEditModal() {
   const modal = document.getElementById('editCarModal');
-  if (modal) modal.style.display = 'none';
+  if (modal) modal.classList.remove('visible');
   _editingCarId = null;
 }
 
