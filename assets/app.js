@@ -2071,6 +2071,20 @@ async function init() {
     e.target.value = '';
   });
 
+  // Image URL add for manual form
+  document.getElementById('btnManualImageUrl').addEventListener('click', () => {
+    const input = document.getElementById('manualImageUrl');
+    const url = input.value.trim();
+    if (!url) return;
+    try { new URL(url); } catch { return; }
+    manualImageDataUrls.push(url);
+    renderManualImgPreview();
+    input.value = '';
+  });
+  document.getElementById('manualImageUrl').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('btnManualImageUrl').click();
+  });
+
   // Compare toggle
   document.getElementById('btnCompare').addEventListener('click', () => {
     const section = document.getElementById('compareSection');

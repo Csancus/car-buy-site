@@ -93,6 +93,10 @@
           <input type="file" id="manualImages" multiple accept="image/*" style="display:none" />
           <span class="manual-img-hint">Max 800px, JPEG tömörítés</span>
         </div>
+        <div class="manual-img-url-row">
+          <input type="url" id="manualImageUrl" class="manual-img-url-input" placeholder="Kép URL (pl. https://...jpg)" autocomplete="off" />
+          <button id="btnManualImageUrl" class="btn btn-secondary btn-sm" type="button">URL hozzáadása</button>
+        </div>
         <div id="manualImgPreview" class="manual-img-preview"></div>
         <div class="manual-form-actions">
           <button id="btnManualAdd" class="btn btn-primary" type="button">

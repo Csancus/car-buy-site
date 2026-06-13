@@ -1821,6 +1821,22 @@ body {
 .manual-img-upload-btn .ic { width: 14px; height: 14px; }
 .manual-img-hint { font-size: 0.72rem; color: var(--text-dim); }
 
+.manual-img-url-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.manual-img-url-input {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-elevated);
+  color: var(--text);
+  font-size: 0.82rem;
+}
+.manual-img-url-input:focus { outline: none; border-color: var(--primary); }
+
 .manual-img-preview {
   display: flex;
   flex-wrap: wrap;
