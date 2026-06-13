@@ -668,8 +668,8 @@ body {
   .view-list .summary-footer { gap: 4px; }
   .view-list .btn-listing,
   .view-list .btn-expand { font-size: 0.72rem; padding: 3px 8px; }
-  .view-list .btn-order,
-  .view-list .btn-delete { width: 24px; height: 24px; }
+  .btn-up, .btn-down { display: none; }
+  .btn-delete { width: 34px; height: 34px; }
 
   /* Compare table: compact + allow word wrap */
   .compare-inner { padding: 14px; }
