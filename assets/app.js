@@ -193,6 +193,11 @@ const QUICK_FILTERS = [
     label: '🔧 Használt',
     test: car => car.carConditionLabel !== 'new',
   },
+  {
+    id: 'available',
+    label: '🟢 Elérhető',
+    test: car => car.available !== false,
+  },
 ];
 
 // ============================================================
@@ -778,6 +783,15 @@ function populateCard(card, car) {
   const statusSel = card.querySelector('.status-select');
   if (statusSel) statusSel.value = status;
 
+  // Available badge
+  const avail = car.available !== false;
+  const btnAvail = card.querySelector('.btn-avail');
+  if (btnAvail) {
+    btnAvail.classList.toggle('is-avail', avail);
+    btnAvail.textContent = avail ? 'Elérhető' : 'Nem elérhető';
+    btnAvail.title = avail ? 'Elérhető – kattints a váltáshoz' : 'Nem elérhető – kattints a váltáshoz';
+  }
+
   // Summary thumbnail
   const summaryImg = card.querySelector('.summary-img');
   const thumbPh = card.querySelector('.thumb-placeholder');
@@ -1215,6 +1229,17 @@ function attachCardEvents(card, car) {
     full.style.display = isHidden ? 'block' : 'none';
     preview.style.display = isHidden ? 'none' : 'flex';
     this.textContent = isHidden ? 'Kevesebb mutatása' : 'Összes felszereltség mutatása';
+  });
+
+  // Available toggle
+  card.querySelector('.btn-avail').addEventListener('click', async () => {
+    const c = getCarById(carId);
+    if (!c) return;
+    c.available = c.available === false ? true : false;
+    saveToStorage();
+    populateCard(card, c);
+    applyFilters();
+    await apiUpdateCar(carId, { available: c.available });
   });
 
   // Archive button (quick archive)
@@ -2028,7 +2053,7 @@ function initSortable() {
     ghostClass: 'sortable-ghost',
     dragClass: 'sortable-drag',
     handle: '.card-header-row',
-    filter: '.btn-archive, .status-select, .slide-btn, .btn-toggle-equip, .comment-form, a',
+    filter: '.btn-archive, .btn-avail, .status-select, .slide-btn, .btn-toggle-equip, .comment-form, a',
     onEnd: async () => {
       const cardEls = grid.querySelectorAll('.car-card');
       cardEls.forEach((el, i) => {

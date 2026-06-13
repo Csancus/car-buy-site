@@ -399,10 +399,16 @@ body {
 
 .cars-grid:not(.view-list) .summary-body { position: relative; }
 
-.btn-archive {
+.card-top-actions {
   position: absolute;
   top: 10px;
   right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-archive {
   width: 26px;
   height: 26px;
   border: 1px solid var(--border);
@@ -413,10 +419,47 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   transition: background var(--transition), border-color var(--transition), color var(--transition);
 }
 .btn-archive svg { width: 13px; height: 13px; }
 .btn-archive:hover { background: rgba(217,119,6,.12); border-color: rgba(217,119,6,.35); color: #d97706; }
+
+.btn-avail {
+  height: 22px;
+  padding: 0 8px 0 6px;
+  border-radius: 20px;
+  font-size: 0.67rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background var(--transition), border-color var(--transition), color var(--transition);
+}
+.btn-avail::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+.btn-avail.is-avail {
+  background: var(--green-bg);
+  border: 1px solid rgba(22,163,74,.3);
+  color: var(--green);
+}
+.btn-avail.is-avail:hover { background: rgba(22,163,74,.18); }
+.btn-avail:not(.is-avail) {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+}
+.btn-avail:not(.is-avail):hover { border-color: var(--border-mid); color: var(--text-muted); }
 
 /* Price */
 .car-price {
