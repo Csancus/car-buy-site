@@ -777,7 +777,6 @@ function populateCard(card, car) {
   if (rankBadge) {
     const rank = autoRanks[String(car.id)];
     if (rank && cars.length > 1) {
-      rankBadge.textContent = `#${rank}`;
       rankBadge.style.display = 'inline';
       rankBadge.className = `auto-rank-badge rank-${rank <= 3 ? rank : 'other'}`;
       if (rankInfoBtn) {
@@ -796,6 +795,7 @@ function populateCard(card, car) {
           ? Math.max(0, Math.min(5, 5 * (1 - (car.consumption - 4.5) / 3))).toFixed(1)
           : null;
         const total   = computeAutoScore(car).toFixed(1);
+        rankBadge.textContent = `#${rank} · ${total} pt`;
         const lines = [
           `Ár: ${pPrice} pt`,
           `Km-óra: ${pKm} pt`,
