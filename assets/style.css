@@ -1730,9 +1730,32 @@ body {
 }
 .search-input-wrap--hero { flex: 1; min-width: 0; }
 .search-ic--hero { width: 18px; height: 18px; left: 14px; }
+.global-search-input--hero::-webkit-search-cancel-button { display: none; }
+
+.search-clear-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: var(--bg-elevated);
+  border-radius: 50%;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+  transition: background var(--transition), color var(--transition);
+}
+.search-clear-btn:hover { background: var(--border-mid); color: var(--text); }
+
 .global-search-input--hero {
   font-size: 1rem;
-  padding: 11px 16px 11px 44px;
+  padding: 11px 36px 11px 44px;
   border-radius: 10px;
   border-width: 2px;
   background: var(--bg-card);

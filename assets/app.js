@@ -2041,10 +2041,21 @@ async function init() {
 
   // Search
   const searchInput = document.getElementById('globalSearch');
+  const searchClearBtn = document.getElementById('searchClearBtn');
   if (searchInput) {
     searchInput.addEventListener('input', () => {
       activeSearch = searchInput.value.trim();
+      if (searchClearBtn) searchClearBtn.style.display = activeSearch ? '' : 'none';
       applyFilters();
+    });
+  }
+  if (searchClearBtn) {
+    searchClearBtn.addEventListener('click', () => {
+      searchInput.value = '';
+      activeSearch = '';
+      searchClearBtn.style.display = 'none';
+      applyFilters();
+      searchInput.focus();
     });
   }
 
