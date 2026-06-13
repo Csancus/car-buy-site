@@ -578,6 +578,7 @@ function computeAutoScore(car) {
   const trans = (car.transmission || '').toLowerCase();
   if (trans.includes('automat') || trans.includes('fokozatmentes') || trans.includes('tiptronic') || trans.includes('dct') || trans.includes('cvt')) score += 10;
   if (car.carConditionLabel === 'new') score += 5;
+  if (car.consumption != null) score += Math.max(0, Math.min(5, 5 * (1 - (car.consumption - 4.5) / 3)));
   return score;
 }
 
@@ -795,6 +796,9 @@ function populateCard(card, car) {
         const transLow = (car.transmission || '').toLowerCase();
         const pAuto   = (transLow.includes('automat') || transLow.includes('fokozatmentes') || transLow.includes('tiptronic') || transLow.includes('dct') || transLow.includes('cvt')) ? '+10' : null;
         const pNew    = car.carConditionLabel === 'new' ? '+5' : null;
+        const pConsump = car.consumption != null
+          ? Math.max(0, Math.min(5, 5 * (1 - (car.consumption - 4.5) / 3))).toFixed(1)
+          : null;
         const total   = computeAutoScore(car).toFixed(1);
         const lines = [
           `Ár: ${pPrice} pt`,
@@ -802,10 +806,11 @@ function populateCard(card, car) {
           `Évjárat: ${pYear} pt`,
           `Kiemelések (${(car.top5||[]).length}/5): ${pTop5} pt`,
           `Felszereltség (${(car.equipment||[]).length} elem): ${pEquip} pt`,
-          pLoc  ? `Budapest/Pest: ${pLoc} pt` : null,
-          pPhev ? `PHEV bónusz: ${pPhev} pt` : null,
-          pAuto ? `Automata bónusz: ${pAuto} pt` : null,
-          pNew  ? `Új autó bónusz: ${pNew} pt` : null,
+          pLoc     ? `Budapest/Pest: ${pLoc} pt` : null,
+          pPhev    ? `PHEV bónusz: ${pPhev} pt` : null,
+          pAuto    ? `Automata bónusz: ${pAuto} pt` : null,
+          pNew     ? `Új autó bónusz: ${pNew} pt` : null,
+          pConsump ? `Fogyasztás (${car.consumption} l): ${pConsump} pt` : null,
           `Összesen: ${total} pt`,
         ].filter(Boolean);
         rankInfoBtn.dataset.scoreHtml = lines.join('\n');
@@ -833,6 +838,16 @@ function populateCard(card, car) {
   setSum('.sum-fuel', car.fuel ? `⛽ ${car.fuel}` : '');
   setSum('.sum-trans', car.transmission ? `⚙️ ${car.transmission}` : '');
   setSum('.sum-trunk', car.trunkVolume ? `🧳 ${car.trunkVolume}` : '');
+  // Consumption badge with disclaimer icon
+  const consumEl = card.querySelector('.sum-consumption');
+  if (consumEl) {
+    if (car.consumption != null) {
+      consumEl.innerHTML = `💧 ${car.consumption} l/100km <span class="consumption-disclaimer" title="Becsült WLTP adat, valós fogyasztás eltérhet a vezetési stílustól, töltöttségtől és körülményektől">⚠</span>`;
+      consumEl.style.display = '';
+    } else {
+      consumEl.style.display = 'none';
+    }
+  }
   setSum('.sum-condition', car.condition || '');
 
   // Warranty badge

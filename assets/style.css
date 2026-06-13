@@ -1867,3 +1867,12 @@ body {
   justify-content: center;
 }
 .manual-img-remove:hover { background: var(--red); }
+
+/* ── Consumption disclaimer icon ────────────────────────── */
+.consumption-disclaimer {
+  font-size: 0.65rem;
+  cursor: help;
+  opacity: 0.6;
+  vertical-align: middle;
+}
+.consumption-disclaimer:hover { opacity: 1; }
