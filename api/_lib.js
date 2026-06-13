@@ -1,8 +1,6 @@
 'use strict';
 const { kv } = require('@vercel/kv');
-const https = require('https');
-const http = require('http');
-const zlib = require('zlib');
+const { execFile } = require('child_process');
 
 const CARS_KEY = 'carbuy_cars';
 
@@ -17,55 +15,32 @@ async function saveCars(cars) {
   await kv.set(CARS_KEY, cars);
 }
 
-// ── HTTP fetch ────────────────────────────────────────────────────
-function fetchUrl(targetUrl, redirectCount = 0) {
+// ── HTTP fetch via curl (bypasses Cloudflare TLS fingerprinting) ──
+function fetchUrl(targetUrl) {
   return new Promise((resolve, reject) => {
-    if (redirectCount > 5) return reject(new Error('Too many redirects'));
-    const lib = targetUrl.startsWith('https') ? https : http;
-    const req = lib.get(targetUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-        'Accept-Language': 'hu-HU,hu;q=0.9,en;q=0.8',
-        'Accept-Encoding': 'gzip, deflate, br',
-        'Connection': 'keep-alive',
-        'Upgrade-Insecure-Requests': '1',
-        'Sec-Fetch-Dest': 'document',
-        'Sec-Fetch-Mode': 'navigate',
-        'Sec-Fetch-Site': 'none',
-        'Sec-Fetch-User': '?1',
-        'Cache-Control': 'max-age=0',
-      },
-    }, (res) => {
-      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-        const loc = res.headers.location.startsWith('http')
-          ? res.headers.location
-          : new URL(res.headers.location, targetUrl).href;
-        res.resume();
-        return fetchUrl(loc, redirectCount + 1).then(resolve).catch(reject);
-      }
-      if (res.statusCode !== 200) {
-        res.resume();
-        return reject(new Error(`HTTP ${res.statusCode}`));
-      }
-      const chunks = [];
-      res.on('data', c => chunks.push(c));
-      res.on('end', () => {
-        const buf = Buffer.concat(chunks);
-        const enc = (res.headers['content-encoding'] || '').toLowerCase();
-        if (enc === 'br') {
-          zlib.brotliDecompress(buf, (err, out) => err ? reject(err) : resolve(out.toString('utf8')));
-        } else if (enc === 'gzip') {
-          zlib.gunzip(buf, (err, out) => err ? reject(err) : resolve(out.toString('utf8')));
-        } else if (enc === 'deflate') {
-          zlib.inflate(buf, (err, out) => err ? reject(err) : resolve(out.toString('utf8')));
-        } else {
-          resolve(buf.toString('utf8'));
-        }
-      });
+    execFile('curl', [
+      '-s', '-L',
+      '--compressed',
+      '--max-time', '25',
+      '-A', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      '-H', 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+      '-H', 'Accept-Language: hu-HU,hu;q=0.9,en;q=0.8',
+      '-H', 'Upgrade-Insecure-Requests: 1',
+      '-H', 'Sec-Fetch-Dest: document',
+      '-H', 'Sec-Fetch-Mode: navigate',
+      '-H', 'Sec-Fetch-Site: none',
+      '-H', 'Sec-Fetch-User: ?1',
+      '-w', '\n__STATUS__%{http_code}',
+      targetUrl,
+    ], { maxBuffer: 10 * 1024 * 1024 }, (err, stdout, stderr) => {
+      if (err) return reject(new Error(err.message));
+      const marker = '\n__STATUS__';
+      const idx = stdout.lastIndexOf(marker);
+      const status = idx !== -1 ? parseInt(stdout.slice(idx + marker.length), 10) : 200;
+      const body = idx !== -1 ? stdout.slice(0, idx) : stdout;
+      if (status !== 200) return reject(new Error(`HTTP ${status}`));
+      resolve(body);
     });
-    req.on('error', reject);
-    req.setTimeout(20000, () => { req.destroy(); reject(new Error('Timeout')); });
   });
 }
 
