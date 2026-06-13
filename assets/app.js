@@ -1368,18 +1368,21 @@ function attachCardEvents(card, car) {
   }
 
   // Personal ranking delete (delegated)
-  card.querySelector('.rankings-list').addEventListener('click', async (e) => {
-    const btn = e.target.closest('.btn-ranking-delete');
-    if (!btn) return;
-    const name = btn.dataset.name;
-    const c = getCarById(carId);
-    if (!c) return;
-    c.rankings = (c.rankings || []).filter(r => r.name !== name);
-    saveToStorage();
-    renderRankings(card, c);
-    renderFilterBar();
-    await apiUpdateCar(carId, { rankings: c.rankings });
-  });
+  const rankingsList = card.querySelector('.rankings-list');
+  if (rankingsList) {
+    rankingsList.addEventListener('click', async (e) => {
+      const btn = e.target.closest('.btn-ranking-delete');
+      if (!btn) return;
+      const name = btn.dataset.name;
+      const c = getCarById(carId);
+      if (!c) return;
+      c.rankings = (c.rankings || []).filter(r => r.name !== name);
+      saveToStorage();
+      renderRankings(card, c);
+      renderFilterBar();
+      await apiUpdateCar(carId, { rankings: c.rankings });
+    });
+  }
 
   // Comment form
   card.querySelector('.comment-form').addEventListener('submit', async (e) => {
