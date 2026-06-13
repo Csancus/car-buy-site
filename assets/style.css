@@ -762,7 +762,7 @@ body {
   position: relative;
 }
 .view-list .summary-img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.view-list .summary-body { flex: 1; min-width: 0; }
+.view-list .summary-body { flex: 1; min-width: 0; position: relative; }
 .view-list .car-price { font-size: 1.2rem; }
 
 /* Thumbnail placeholder */
