@@ -68,9 +68,9 @@ module.exports = async (req, res) => {
       const cars = await loadCars();
       const car = cars.find(c => String(c.id) === String(id));
       if (!car) return res.status(404).json({ error: 'Hirdetés nem található' });
-      const allowed = ['sellerLabel', 'carConditionLabel', 'rankings', 'extraEquipment', 'missingEquipment', 'status', 'comments', 'url'];
-      for (const key of allowed) {
-        if (req.body[key] !== undefined) car[key] = req.body[key];
+      const forbidden = new Set(['id', 'order', 'addedAt']);
+      for (const [key, val] of Object.entries(req.body || {})) {
+        if (!forbidden.has(key)) car[key] = val;
       }
       await saveCars(cars);
       return res.status(200).json({ ok: true });
