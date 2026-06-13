@@ -139,6 +139,14 @@ const QUICK_FILTERS = [
     }),
   },
   {
+    id: 'warranty',
+    label: '🛡️ Garancia',
+    test: car => {
+      const eqLow = (car.equipment || []).map(s => s.toLowerCase());
+      return eqLow.some(e => e.includes('garanci')) || (car.description || '').toLowerCase().includes('garanci');
+    },
+  },
+  {
     id: 'private',
     label: '👤 Magánszemély',
     test: car => car.sellerLabel === 'private' || (car.sellerType || '').toLowerCase().includes('magán'),
