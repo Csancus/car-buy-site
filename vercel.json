@@ -4,13 +4,16 @@
     { "src": "api/cars.js", "use": "@vercel/node" },
     { "src": "api/order.js", "use": "@vercel/node" },
     { "src": "api/comment.js", "use": "@vercel/node" },
+    { "src": "api/rankings.js", "use": "@vercel/node" },
     { "src": "index.html", "use": "@vercel/static" },
-    { "src": "assets/**", "use": "@vercel/static" }
+    { "src": "assets/**", "use": "@vercel/static" },
+    { "src": "favicon.svg", "use": "@vercel/static" }
   ],
   "routes": [
     { "src": "/api/cars", "dest": "/api/cars.js" },
     { "src": "/api/order", "dest": "/api/order.js" },
     { "src": "/api/comment", "dest": "/api/comment.js" },
+    { "src": "/api/rankings", "dest": "/api/rankings.js" },
     { "src": "/", "dest": "/index.html" },
     { "src": "/(.*)", "dest": "/$1" }
   ]
