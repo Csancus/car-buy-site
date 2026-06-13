@@ -153,6 +153,24 @@ const QUICK_FILTERS = [
 // ============================================================
 // Utils
 // ============================================================
+function showToast(msg, duration = 3500) {
+  let container = document.getElementById('toastContainer');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toastContainer';
+    document.body.appendChild(container);
+  }
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = msg;
+  container.appendChild(toast);
+  requestAnimationFrame(() => toast.classList.add('toast-visible'));
+  setTimeout(() => {
+    toast.classList.remove('toast-visible');
+    toast.addEventListener('transitionend', () => toast.remove(), { once: true });
+  }, duration);
+}
+
 function formatPrice(n) {
   if (!n && n !== 0) return '—';
   return n.toLocaleString('hu-HU').replace(/\s/g, '\u00a0') + '\u00a0Ft';
@@ -1622,6 +1640,7 @@ async function handleAddCar() {
     renderAll();
     renderCompareTable();
     urlInput.value = '';
+    showToast(`✅ ${car.name || 'Autó'} sikeresen hozzáadva!`);
   } catch (e) {
     showError(`Hiba: ${e.message || 'Ismeretlen hiba'}`);
     console.error(e);
