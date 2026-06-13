@@ -1523,11 +1523,8 @@ body {
 .prm-list {
   list-style: none;
   overflow-y: auto;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  min-height: 60px;
+  max-height: 52vh;
+  min-height: 80px;
 }
 .prm-item {
   display: flex;
@@ -1537,6 +1534,7 @@ body {
   border-radius: var(--radius-sm);
   overflow: hidden;
   user-select: none;
+  margin-bottom: 5px;
   transition: box-shadow var(--transition), border-color var(--transition);
 }
 .prm-item.sortable-chosen { box-shadow: var(--shadow-hover); border-color: var(--primary); }
