@@ -855,6 +855,85 @@ body {
 }
 .btn-listing:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
 
+/* Extra links */
+.extra-links-wrap { display: contents; }
+.btn-extra-link { position: relative; padding-right: 22px !important; }
+.extra-link-del {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.8rem;
+  line-height: 1;
+  opacity: 0;
+  cursor: pointer;
+  color: inherit;
+  pointer-events: none;
+  transition: opacity .15s;
+}
+.btn-extra-link:hover .extra-link-del { opacity: 1; pointer-events: auto; }
+
+/* + Link button */
+.btn-add-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 9px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  border: 1px dashed var(--border-mid);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: border-color var(--transition), color var(--transition), background var(--transition);
+}
+.btn-add-link:hover { border-color: var(--primary); color: var(--primary); background: var(--bg-elevated); }
+.btn-add-link .ic { width: 11px; height: 11px; }
+
+/* Add link inline form */
+.add-link-form {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.add-link-input {
+  width: 180px;
+  font-size: 0.72rem;
+  padding: 3px 8px;
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text);
+  font-family: inherit;
+  outline: none;
+  transition: border-color var(--transition);
+}
+.add-link-input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-glow); }
+.btn-add-link-ok {
+  padding: 3px 10px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-sm);
+  background: var(--primary);
+  color: #fff;
+  cursor: pointer;
+  font-family: inherit;
+}
+.btn-add-link-cancel {
+  padding: 3px 8px;
+  font-size: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: inherit;
+}
+
 .btn-expand {
   display: inline-flex;
   align-items: center;

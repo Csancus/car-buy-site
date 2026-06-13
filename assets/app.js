@@ -818,6 +818,46 @@ function populateCard(card, car) {
     btnListing.style.display = (isNew && !car.url) ? 'none' : '';
   }
 
+  // Extra links
+  const extraLinksWrap = card.querySelector('.extra-links-wrap');
+  if (extraLinksWrap) {
+    extraLinksWrap.innerHTML = '';
+    for (const [i, link] of (car.extraLinks || []).entries()) {
+      const a = document.createElement('a');
+      a.className = 'btn-listing btn-extra-link';
+      a.href = link;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      const svgNS = 'http://www.w3.org/2000/svg';
+      const svg = document.createElementNS(svgNS, 'svg');
+      svg.setAttribute('class', 'ic');
+      svg.setAttribute('viewBox', '0 0 24 24');
+      svg.setAttribute('fill', 'none');
+      svg.setAttribute('stroke', 'currentColor');
+      svg.setAttribute('stroke-width', '2');
+      svg.setAttribute('stroke-linecap', 'round');
+      svg.setAttribute('stroke-linejoin', 'round');
+      svg.innerHTML = '<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>';
+      a.appendChild(svg);
+      a.appendChild(document.createTextNode(`Link ${i + 2}`));
+      const del = document.createElement('span');
+      del.className = 'extra-link-del';
+      del.textContent = '×';
+      del.title = 'Link törlése';
+      del.addEventListener('click', async (e) => {
+        e.preventDefault(); e.stopPropagation();
+        const c = getCarById(car.id);
+        if (!c) return;
+        c.extraLinks = (c.extraLinks || []).filter((_, j) => j !== i);
+        saveToStorage();
+        populateCard(card, c);
+        await apiUpdateCar(car.id, { extraLinks: c.extraLinks });
+      });
+      a.appendChild(del);
+      extraLinksWrap.appendChild(a);
+    }
+  }
+
   // Auto rank badge + score info btn
   const rankBadge = card.querySelector('.auto-rank-badge');
   const rankInfoBtn = card.querySelector('.rank-score-btn');
@@ -1241,6 +1281,35 @@ function attachCardEvents(card, car) {
     applyFilters();
     await apiUpdateCar(carId, { available: c.available });
   });
+
+  // Extra link — add button
+  const btnAddLink = card.querySelector('.btn-add-link');
+  const addLinkForm = card.querySelector('.add-link-form');
+  const addLinkInput = card.querySelector('.add-link-input');
+  btnAddLink.addEventListener('click', () => {
+    btnAddLink.style.display = 'none';
+    addLinkForm.style.display = 'flex';
+    addLinkInput.value = '';
+    addLinkInput.focus();
+  });
+  card.querySelector('.btn-add-link-cancel').addEventListener('click', () => {
+    addLinkForm.style.display = 'none';
+    btnAddLink.style.display = '';
+  });
+  const confirmAddLink = async () => {
+    const url = addLinkInput.value.trim();
+    if (!url) return;
+    const c = getCarById(carId);
+    if (!c) return;
+    c.extraLinks = [...(c.extraLinks || []), url];
+    saveToStorage();
+    populateCard(card, c);
+    addLinkForm.style.display = 'none';
+    btnAddLink.style.display = '';
+    await apiUpdateCar(carId, { extraLinks: c.extraLinks });
+  };
+  card.querySelector('.btn-add-link-ok').addEventListener('click', confirmAddLink);
+  addLinkInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') confirmAddLink(); if (e.key === 'Escape') { addLinkForm.style.display = 'none'; btnAddLink.style.display = ''; } });
 
   // Archive button (quick archive)
   card.querySelector('.btn-archive').addEventListener('click', async () => {
