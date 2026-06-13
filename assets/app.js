@@ -1321,12 +1321,13 @@ function renderFilterBar() {
     lbl.className = 'filter-section-label';
     lbl.textContent = 'Rendezés:';
     rowSort.appendChild(lbl);
-    for (const [key, icon, txt] of [['rank','🏆','Rangsor'],['price_asc','↑','Ár: olcsó'],['price_desc','↓','Ár: drága']]) {
+    for (const [key, icon, txt] of [['price_asc','↑','Ár: olcsó'],['price_desc','↓','Ár: drága']]) {
       const btn = document.createElement('button');
       btn.className = 'filter-pill' + (activeSortBy === key ? ' active' : '');
       btn.textContent = `${icon} ${txt}`;
       btn.addEventListener('click', () => {
         activeSortBy = activeSortBy === key ? null : key;
+        activePersonFilter = null;
         renderAll(); renderFilterBar();
       });
       rowSort.appendChild(btn);
@@ -1501,14 +1502,30 @@ function renderFilterBar() {
     }
   }
 
-  // ── Személy filter (rangsorok alapján) ────────────────────
+  // ── Rangsorok section ─────────────────────────────────────
   const pillsContainer = document.getElementById('filterPills');
   const rowPerson = document.getElementById('filterRowPerson');
-  if (pillsContainer) {
+  if (pillsContainer && rowPerson) {
     pillsContainer.innerHTML = '';
     const names = new Set();
     for (const car of cars) for (const r of (car.rankings || [])) if (r.name) names.add(r.name);
-    if (rowPerson) rowPerson.style.display = names.size > 0 ? '' : 'none';
+
+    const lbl = document.createElement('span');
+    lbl.className = 'filter-section-label';
+    lbl.textContent = 'Rangsorok:';
+    pillsContainer.appendChild(lbl);
+
+    // Alap rangsor pill
+    const alapBtn = document.createElement('button');
+    alapBtn.className = 'filter-pill' + (!activePersonFilter ? ' active' : '');
+    alapBtn.textContent = '🏆 Alap rangsor';
+    alapBtn.addEventListener('click', () => {
+      activePersonFilter = null;
+      activeSortBy = 'rank';
+      renderAll();
+    });
+    pillsContainer.appendChild(alapBtn);
+
     for (const name of [...names].sort()) {
       const pill = document.createElement('button');
       pill.className = 'filter-pill' + (activePersonFilter === name ? ' active' : '');
@@ -1519,6 +1536,8 @@ function renderFilterBar() {
       });
       pillsContainer.appendChild(pill);
     }
+
+    rowPerson.style.display = '';
   }
 }
 
@@ -2232,8 +2251,12 @@ async function init() {
       const chip = document.createElement('button');
       chip.type = 'button';
       chip.className = 'prm-name-chip';
-      chip.textContent = name;
-      chip.addEventListener('click', () => {
+      chip.innerHTML = escHtml(name) + ' <span class="prm-chip-del" title="Törlés">×</span>';
+      chip.addEventListener('click', (e) => {
+        if (e.target.classList.contains('prm-chip-del')) {
+          deletePrmRanking(name);
+          return;
+        }
         document.getElementById('prmNameInput').value = name;
         renderPrmList(name);
       });
@@ -2266,7 +2289,7 @@ async function init() {
         (thumb ? `<img class="prm-thumb" src="${thumb}" loading="lazy" />` : '<div class="prm-thumb-empty"></div>') +
         `<span class="prm-car-name">${escHtml(car.name || 'Ismeretlen')}</span>` +
         (price ? `<span class="prm-car-price">${escHtml(price)}</span>` : '') +
-        (top5.length ? '<button class="prm-highlights-btn" type="button">&#9660; kiemelések</button>' : '') +
+        (top5.length ? '<button class="prm-highlights-btn" type="button">&#9660; Részletek</button>' : '') +
         '<span class="prm-drag-handle">⠿⠿</span>' +
         '</div>' +
         (top5.length ? `<div class="prm-highlights">${top5.map(h => `<span class="prm-highlight-tag">${escHtml(h)}</span>`).join('')}</div>` : '');
@@ -2295,7 +2318,7 @@ async function init() {
       if (hlBtn && hlDiv) {
         hlBtn.addEventListener('click', () => {
           hlDiv.classList.toggle('open');
-          hlBtn.textContent = hlDiv.classList.contains('open') ? '▲ kiemelések' : '▼ kiemelések';
+          hlBtn.textContent = hlDiv.classList.contains('open') ? '▲ Részletek' : '▼ Részletek';
         });
       }
     });
@@ -2308,6 +2331,21 @@ async function init() {
         });
       },
     });
+  }
+
+  async function deletePrmRanking(name) {
+    await fetch('/api/rankings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, items: [] }),
+    });
+    for (const car of cars) {
+      if (car.rankings) car.rankings = car.rankings.filter(r => r.name !== name);
+    }
+    if (activePersonFilter === name) { activePersonFilter = null; }
+    renderPrmExistingNames();
+    renderPrmList(document.getElementById('prmNameInput').value.trim());
+    renderFilterBar();
   }
 
   async function savePrmRanking() {

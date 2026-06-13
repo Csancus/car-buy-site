@@ -18,12 +18,19 @@ module.exports = async (req, res) => {
     if (!name || !Array.isArray(items)) return res.status(400).json({ error: 'name és items megadása kötelező' });
 
     const cars = await loadCars();
-    for (const { id, position } of items) {
-      const car = cars.find(c => String(c.id) === String(id));
-      if (!car) continue;
-      const rankings = (car.rankings || []).filter(r => r.name !== name);
-      rankings.push({ name, position });
-      car.rankings = rankings;
+    if (items.length === 0) {
+      // delete all rankings for this name
+      for (const car of cars) {
+        if (car.rankings) car.rankings = car.rankings.filter(r => r.name !== name);
+      }
+    } else {
+      for (const { id, position } of items) {
+        const car = cars.find(c => String(c.id) === String(id));
+        if (!car) continue;
+        const rankings = (car.rankings || []).filter(r => r.name !== name);
+        rankings.push({ name, position });
+        car.rankings = rankings;
+      }
     }
     await saveCars(cars);
     return res.status(200).json({ ok: true });

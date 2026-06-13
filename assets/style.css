@@ -1527,6 +1527,9 @@ body {
   transition: background var(--transition), color var(--transition), border-color var(--transition);
 }
 .prm-name-chip:hover { border-color: var(--primary); color: var(--primary); }
+.prm-chip-del { margin-left: 4px; opacity: .5; font-weight: 700; pointer-events: all; }
+.prm-name-chip:hover .prm-chip-del { opacity: .8; }
+.prm-chip-del:hover { opacity: 1 !important; color: var(--red); }
 .prm-hint { font-size: 0.78rem; color: var(--text-dim); margin-bottom: 10px; }
 .prm-list {
   list-style: none;
