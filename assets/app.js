@@ -1402,6 +1402,11 @@ function renderFilterBar() {
     szurokLbl.textContent = 'Szűrők:';
     rowAttr.appendChild(szurokLbl);
 
+    // Grid wrapper for the attribute dropdowns (responsive on mobile)
+    const attrGrid = document.createElement('div');
+    attrGrid.className = 'attr-filter-grid';
+    rowAttr.appendChild(attrGrid);
+
     // Checkbox dropdown helper
     function makeCheckboxDropdown(key, label, vals, activeSet, onChange) {
       if (!vals.length) return null;
@@ -1449,13 +1454,13 @@ function renderFilterBar() {
       }
       applyFilters(); renderFilterBar();
     });
-    if (brandWrap) rowAttr.appendChild(brandWrap);
+    if (brandWrap) attrGrid.appendChild(brandWrap);
 
     // Típus (filtered by selected brands)
     const modelsSource = activeAttrFilters.brand.size ? cars.filter(c => activeAttrFilters.brand.has(c.brand)) : cars;
     const models = [...new Set(modelsSource.map(c => c.model).filter(Boolean))].sort();
     const modelWrap = makeCheckboxDropdown('model', 'Típus', models, activeAttrFilters.model, () => { applyFilters(); renderFilterBar(); });
-    if (modelWrap) rowAttr.appendChild(modelWrap);
+    if (modelWrap) attrGrid.appendChild(modelWrap);
 
     // Üzemanyag, Váltó, Állapot
     for (const { key, label } of [
@@ -1465,13 +1470,13 @@ function renderFilterBar() {
     ]) {
       const vals = [...new Set(cars.map(c => c[key]).filter(Boolean))].sort();
       const w = makeCheckboxDropdown(key, label, vals, activeAttrFilters[key], () => { applyFilters(); renderFilterBar(); });
-      if (w) rowAttr.appendChild(w);
+      if (w) attrGrid.appendChild(w);
     }
 
     // Évjárat checkbox dropdown (sorted descending)
     const yearVals = [...new Set(cars.map(c => c.year).filter(Boolean))].sort((a, b) => b - a);
     const yearWrap = makeCheckboxDropdown('year', 'Évjárat', yearVals, activeAttrFilters.year, () => { applyFilters(); renderFilterBar(); });
-    if (yearWrap) rowAttr.appendChild(yearWrap);
+    if (yearWrap) attrGrid.appendChild(yearWrap);
   }
 
   // ── Rangsorok section ─────────────────────────────────────

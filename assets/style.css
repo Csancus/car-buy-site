@@ -666,18 +666,17 @@ body {
   .filter-controls-row { gap: 5px; flex-wrap: wrap; align-items: flex-start; padding: 6px 0; }
   .filter-controls-row > .filter-row { width: 100%; flex-shrink: 1; }
 
-  /* Attr filter row: responsive auto-fill grid */
-  #filterRowAttr {
-    display: grid !important;
-    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-    gap: 6px;
-    align-items: start;
-  }
-  .status-filter-wrap { grid-column: 1 / -1; }
-  .filter-controls-row .filter-section-label { grid-column: 1 / -1; }
-  .attr-filter-btn,
+  /* Attr filter row: stack items vertically */
+  #filterRowAttr { flex-wrap: wrap; gap: 6px; align-items: flex-start; }
+  .status-filter-wrap { flex: 0 0 100%; }
   .status-filter-btn { display: block; width: 100%; box-sizing: border-box; }
-  .filter-attr-select { display: block; width: 100%; box-sizing: border-box; }
+  .filter-controls-row .filter-section-label { flex: 0 0 100%; }
+
+  /* Attr dropdown grid: responsive, fills row */
+  .attr-filter-grid { flex: 0 0 100%; gap: 6px; }
+  .attr-filter-grid .attr-filter-wrap { flex: 1 1 110px; min-width: 100px; }
+  .attr-filter-grid .attr-filter-btn,
+  .attr-filter-grid .filter-attr-select { display: block; width: 100%; box-sizing: border-box; }
 
   /* Cap panel width so it doesn't overflow viewport */
   .attr-filter-panel,
@@ -856,6 +855,14 @@ body {
 }
 .car-card.is-archived { opacity: 0.55; }
 .car-card.is-archived .summary-img { filter: grayscale(50%); }
+
+/* ── Attribute filter grid (wraps the 6 dropdowns) ─────── */
+.attr-filter-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
 
 /* ── Status filter dropdown ─────────────────────────────── */
 .status-filter-wrap, .attr-filter-wrap { position: relative; }
