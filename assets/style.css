@@ -1519,3 +1519,16 @@ body {
 }
 .prm-drag-handle:active { cursor: grabbing; }
 .prm-actions { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 14px; }
+
+/* ── Equipment disclaimer ──────────────────────────────── */
+.equip-disclaimer {
+  margin-top: 8px;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-left: 3px solid #f59e0b;
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  line-height: 1.4;
+}
