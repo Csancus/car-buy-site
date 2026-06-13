@@ -126,11 +126,6 @@ const QUICK_FILTERS = [
     test: car => { const f = (car.fuel || '').toLowerCase(); return f.includes('hibrid') && !f.includes('plug-in') && !f.includes('plugin'); },
   },
   {
-    id: 'electric',
-    label: '⚡ Elektromos',
-    test: car => { const f = (car.fuel || '').toLowerCase(); return f.includes('elektromos') && !f.includes('hibrid'); },
-  },
-  {
     id: 'adj_seat',
     label: '💺 Áll. ülésmagasság',
     test: car => (car.equipment || []).some(e => {
