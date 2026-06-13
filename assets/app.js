@@ -1795,7 +1795,22 @@ async function init() {
       .reduce((s, id) => s + (parseInt(document.getElementById(id).value) || 0), 0);
     document.getElementById('rankWeightTotal').textContent = total;
   }
-  rankInfoModal.querySelectorAll('.rank-weight-input').forEach(inp => inp.addEventListener('input', updateWeightTotal));
+  let reRankTimer = null;
+  function applyWeightsLive() {
+    SCORE_WEIGHTS.price     = parseInt(document.getElementById('wPrice').value)   || 0;
+    SCORE_WEIGHTS.mileage   = parseInt(document.getElementById('wMileage').value) || 0;
+    SCORE_WEIGHTS.year      = parseInt(document.getElementById('wYear').value)    || 0;
+    SCORE_WEIGHTS.top5      = parseInt(document.getElementById('wTop5').value)    || 0;
+    SCORE_WEIGHTS.equipment = parseInt(document.getElementById('wEquip').value)   || 0;
+    localStorage.setItem(SCORE_WEIGHTS_KEY, JSON.stringify(SCORE_WEIGHTS));
+    refreshAutoRanks();
+    renderAll();
+  }
+  rankInfoModal.querySelectorAll('.rank-weight-input').forEach(inp => inp.addEventListener('input', () => {
+    updateWeightTotal();
+    clearTimeout(reRankTimer);
+    reRankTimer = setTimeout(applyWeightsLive, 400);
+  }));
 
   document.getElementById('btnRankInfo').addEventListener('click', () => {
     syncWeightInputs();
