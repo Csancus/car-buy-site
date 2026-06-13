@@ -861,7 +861,7 @@ function populateCard(card, car) {
   if (warrantyEl) {
     const eqLower = (car.equipment || []).map(s => s.toLowerCase());
     const descLower = (car.description || '').toLowerCase();
-    const hasWarranty = eqHas(eqLower, 'garanci') || descLower.includes('garanci');
+    const hasWarranty = car.condition === 'Új' || eqHas(eqLower, 'garanci') || descLower.includes('garanci');
     warrantyEl.textContent = hasWarranty ? '🛡️ Garancia' : '';
     warrantyEl.style.display = hasWarranty ? '' : 'none';
   }
