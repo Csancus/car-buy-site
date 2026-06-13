@@ -5,6 +5,7 @@
     { "src": "api/order.js", "use": "@vercel/node" },
     { "src": "api/comment.js", "use": "@vercel/node" },
     { "src": "api/rankings.js", "use": "@vercel/node" },
+    { "src": "api/config.js", "use": "@vercel/node" },
     { "src": "index.html", "use": "@vercel/static" },
     { "src": "assets/**", "use": "@vercel/static" },
     { "src": "favicon.svg", "use": "@vercel/static" }
@@ -14,6 +15,7 @@
     { "src": "/api/order", "dest": "/api/order.js" },
     { "src": "/api/comment", "dest": "/api/comment.js" },
     { "src": "/api/rankings", "dest": "/api/rankings.js" },
+    { "src": "/api/config", "dest": "/api/config.js" },
     { "src": "/", "dest": "/index.html" },
     { "src": "/(.*)", "dest": "/$1" }
   ]
