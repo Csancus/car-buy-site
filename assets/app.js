@@ -1515,7 +1515,7 @@ function renderFilterBar() {
       pill.innerHTML = escHtml(name + ' rangsora') + (activePersonFilter === name ? ' <span class="pill-x">×</span>' : '');
       pill.addEventListener('click', () => {
         activePersonFilter = activePersonFilter === name ? null : name;
-        applyFilters(); renderFilterBar();
+        renderAll();
       });
       pillsContainer.appendChild(pill);
     }
