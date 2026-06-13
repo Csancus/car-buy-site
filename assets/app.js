@@ -540,6 +540,8 @@ function computeAutoScore(car) {
   if (loc.includes('budapest') || loc.includes('pest')) score += W.location;
   const fuel = (car.fuel || '').toLowerCase();
   if (fuel.includes('plug-in') || fuel.includes('plugin')) score += 10;
+  const trans = (car.transmission || '').toLowerCase();
+  if (trans.includes('automat') || trans.includes('fokozatmentes') || trans.includes('tiptronic') || trans.includes('dct') || trans.includes('cvt')) score += 5;
   return score;
 }
 
