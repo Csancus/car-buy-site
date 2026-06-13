@@ -1714,6 +1714,119 @@ async function init() {
 
   // SortableJS
   initSortable();
+
+  // ── Personal ranking modal ─────────────────────────────────
+  let prmSortable = null;
+
+  function openPrmModal(prefillName) {
+    const modal = document.getElementById('prmModal');
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    const nameInput = document.getElementById('prmNameInput');
+    nameInput.value = prefillName || '';
+    renderPrmExistingNames();
+    renderPrmList(nameInput.value.trim());
+    if (!prefillName) nameInput.focus();
+  }
+
+  function closePrmModal() {
+    document.getElementById('prmModal').style.display = 'none';
+    document.body.style.overflow = '';
+  }
+
+  function renderPrmExistingNames() {
+    const names = new Set();
+    for (const car of cars) for (const r of (car.rankings || [])) if (r.name) names.add(r.name);
+    const container = document.getElementById('prmExistingNames');
+    container.innerHTML = '';
+    for (const name of [...names].sort()) {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'prm-name-chip';
+      chip.textContent = name;
+      chip.addEventListener('click', () => {
+        document.getElementById('prmNameInput').value = name;
+        renderPrmList(name);
+      });
+      container.appendChild(chip);
+    }
+  }
+
+  function renderPrmList(name) {
+    const list = document.getElementById('prmList');
+    list.innerHTML = '';
+    if (prmSortable) { prmSortable.destroy(); prmSortable = null; }
+    const sorted = [...cars].sort((a, b) => {
+      const rA = (a.rankings || []).find(r => r.name === name);
+      const rB = (b.rankings || []).find(r => r.name === name);
+      if (rA && rB) return rA.position - rB.position;
+      if (rA) return -1;
+      if (rB) return 1;
+      return computeAutoScore(b) - computeAutoScore(a);
+    });
+    sorted.forEach((car, i) => {
+      const li = document.createElement('li');
+      li.className = 'prm-item';
+      li.dataset.id = car.id;
+      const thumb = car.images && car.images[0] ? escHtml(car.images[0]) : '';
+      const price = car.price ? car.price.toLocaleString('hu-HU') + ' Ft' : '';
+      li.innerHTML =
+        `<span class="prm-pos">${i + 1}</span>` +
+        (thumb ? `<img class="prm-thumb" src="${thumb}" loading="lazy" />` : '<div class="prm-thumb-empty"></div>') +
+        `<span class="prm-car-name">${escHtml(car.name || 'Ismeretlen')}</span>` +
+        (price ? `<span class="prm-car-price">${escHtml(price)}</span>` : '') +
+        `<span class="prm-drag-handle">⠿⠿</span>`;
+      list.appendChild(li);
+    });
+    prmSortable = Sortable.create(list, {
+      animation: 150,
+      handle: '.prm-drag-handle',
+      onEnd: () => {
+        list.querySelectorAll('.prm-item').forEach((li, i) => {
+          li.querySelector('.prm-pos').textContent = i + 1;
+        });
+      },
+    });
+  }
+
+  async function savePrmRanking() {
+    const name = document.getElementById('prmNameInput').value.trim();
+    if (!name) { document.getElementById('prmNameInput').focus(); return; }
+    const items = [...document.getElementById('prmList').querySelectorAll('.prm-item')];
+    const btn = document.getElementById('btnSavePrm');
+    btn.disabled = true;
+    btn.textContent = 'Mentés…';
+    try {
+      for (let i = 0; i < items.length; i++) {
+        const id = items[i].dataset.id;
+        const car = cars.find(c => String(c.id) === String(id));
+        if (!car) continue;
+        const rankings = (car.rankings || []).filter(r => r.name !== name);
+        rankings.push({ name, position: i + 1 });
+        await apiUpdateCar(car.id, { rankings });
+        car.rankings = rankings;
+      }
+      closePrmModal();
+      renderAll();
+      renderFilterBar();
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Mentés';
+    }
+  }
+
+  const btnOpenPrm = document.getElementById('btnOpenPrm');
+  if (btnOpenPrm) btnOpenPrm.addEventListener('click', () => openPrmModal());
+  const btnClosePrm = document.getElementById('btnClosePrm');
+  if (btnClosePrm) btnClosePrm.addEventListener('click', closePrmModal);
+  const btnCancelPrm = document.getElementById('btnCancelPrm');
+  if (btnCancelPrm) btnCancelPrm.addEventListener('click', closePrmModal);
+  const btnSavePrm = document.getElementById('btnSavePrm');
+  if (btnSavePrm) btnSavePrm.addEventListener('click', savePrmRanking);
+  const prmModal = document.getElementById('prmModal');
+  if (prmModal) prmModal.addEventListener('click', e => { if (e.target === prmModal) closePrmModal(); });
+  const prmNameInput = document.getElementById('prmNameInput');
+  if (prmNameInput) prmNameInput.addEventListener('input', () => renderPrmList(prmNameInput.value.trim()));
 }
 
 // ============================================================
