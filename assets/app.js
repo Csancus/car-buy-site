@@ -2183,6 +2183,20 @@ async function init() {
     else if (e.key === 'ArrowRight') { lightboxIdx = (lightboxIdx + 1) % lightboxImages.length; updateLightboxImg(); }
   });
 
+  // Lightbox swipe on mobile
+  let lbTsX = 0;
+  document.getElementById('lightbox').addEventListener('touchstart', (e) => {
+    lbTsX = e.touches[0].clientX;
+  }, { passive: true });
+  document.getElementById('lightbox').addEventListener('touchend', (e) => {
+    if (!lightboxImages.length) return;
+    const dx = e.changedTouches[0].clientX - lbTsX;
+    if (Math.abs(dx) > 40) {
+      lightboxIdx = (lightboxIdx + (dx < 0 ? 1 : -1) + lightboxImages.length) % lightboxImages.length;
+      updateLightboxImg();
+    }
+  }, { passive: true });
+
   // Rank info modal
   const rankInfoModal = document.getElementById('rankInfoModal');
   document.getElementById('btnRankInfo').addEventListener('click', () => {

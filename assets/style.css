@@ -52,7 +52,7 @@
 }
 
 /* ── Base ───────────────────────────────────────────────── */
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; overflow-x: hidden; }
 
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
@@ -654,7 +654,8 @@ body {
   .filter-chips-row::-webkit-scrollbar { display: none; }
   .filter-chips-divider { display: none; }
   .filter-controls-row { gap: 5px; flex-wrap: wrap; }
-  .filter-rank-actions { margin-left: 0; width: 100%; justify-content: flex-start; }
+  .filter-rank-actions { margin-left: 0; flex-shrink: 0; }
+  .filter-search-wrap { width: 100%; min-width: 0; order: -1; }
   .filter-feature-wrap { display: none; }
   .filter-year-input { width: 52px; }
 
@@ -1254,6 +1255,11 @@ body {
 .lightbox-nav:hover { background: var(--primary); border-color: var(--primary); }
 .lightbox-prev { left: 14px; }
 .lightbox-next { right: 14px; }
+@media (pointer: coarse) {
+  .lightbox-nav { width: 56px; height: 56px; }
+  .lightbox-prev { left: 8px; }
+  .lightbox-next { right: 8px; }
+}
 
 .lightbox-counter {
   position: absolute;
@@ -1686,15 +1692,9 @@ body {
 .toast-visible { opacity: 1; transform: translateY(0); }
 
 /* Search bar */
-.search-bar-wrap {
-  background: var(--bg-card);
-  border-bottom: 1px solid var(--border);
-  transition: background .2s, border-color .2s;
-}
-.search-bar-inner {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 10px 24px;
+.filter-search-wrap {
+  flex: 1;
+  min-width: 160px;
 }
 .search-input-wrap {
   position: relative;
