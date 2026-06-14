@@ -113,6 +113,7 @@ let activeAttrFilters   = { brand: new Set(), model: new Set(), fuel: new Set(),
 let activeFeatureFilters = new Set();
 let activeSearch = '';
 let activeStatusFilters = new Set(['active', 'top']);
+let _openAttrFilter = null;
 let statusFilterOpen = false;
 let manualImageDataUrls = [];
 
@@ -1623,12 +1624,13 @@ function renderFilterBar() {
       btn.textContent = activeSet.size > 0 ? [...activeSet].join(', ') : label;
       const panel = document.createElement('div');
       panel.className = 'attr-filter-panel';
-      panel.style.display = 'none';
+      panel.style.display = (_openAttrFilter === key) ? 'block' : 'none';
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         const isOpen = panel.style.display !== 'none';
         document.querySelectorAll('.attr-filter-panel').forEach(p => p.style.display = 'none');
         panel.style.display = isOpen ? 'none' : 'block';
+        _openAttrFilter = isOpen ? null : key;
       });
       for (const v of vals) {
         const lrow = document.createElement('label');
@@ -1636,8 +1638,11 @@ function renderFilterBar() {
         const cb = document.createElement('input');
         cb.type = 'checkbox';
         cb.checked = activeSet.has(v);
-        cb.addEventListener('change', () => {
+        cb.addEventListener('change', (e) => {
+          e.stopPropagation();
           if (cb.checked) activeSet.add(v); else activeSet.delete(v);
+          btn.textContent = activeSet.size > 0 ? [...activeSet].join(', ') : label;
+          btn.className = 'filter-attr-select attr-filter-btn' + (activeSet.size > 0 ? ' has-active' : '');
           onChange();
         });
         lrow.appendChild(cb);
@@ -1664,7 +1669,7 @@ function renderFilterBar() {
     // Típus (filtered by selected brands)
     const modelsSource = activeAttrFilters.brand.size ? cars.filter(c => activeAttrFilters.brand.has(c.brand)) : cars;
     const models = [...new Set(modelsSource.map(c => c.model).filter(Boolean))].sort();
-    const modelWrap = makeCheckboxDropdown('model', 'Típus', models, activeAttrFilters.model, () => { applyFilters(); renderFilterBar(); });
+    const modelWrap = makeCheckboxDropdown('model', 'Típus', models, activeAttrFilters.model, () => { applyFilters(); });
     if (modelWrap) attrGrid.appendChild(modelWrap);
 
     // Üzemanyag, Váltó, Állapot
@@ -1674,13 +1679,13 @@ function renderFilterBar() {
       { key: 'condition', label: 'Állapot' },
     ]) {
       const vals = [...new Set(cars.map(c => c[key]).filter(Boolean))].sort();
-      const w = makeCheckboxDropdown(key, label, vals, activeAttrFilters[key], () => { applyFilters(); renderFilterBar(); });
+      const w = makeCheckboxDropdown(key, label, vals, activeAttrFilters[key], () => { applyFilters(); });
       if (w) attrGrid.appendChild(w);
     }
 
     // Évjárat checkbox dropdown (sorted descending)
     const yearVals = [...new Set(cars.map(c => c.year).filter(Boolean))].sort((a, b) => b - a);
-    const yearWrap = makeCheckboxDropdown('year', 'Évjárat', yearVals, activeAttrFilters.year, () => { applyFilters(); renderFilterBar(); });
+    const yearWrap = makeCheckboxDropdown('year', 'Évjárat', yearVals, activeAttrFilters.year, () => { applyFilters(); });
     if (yearWrap) attrGrid.appendChild(yearWrap);
   }
 
@@ -2401,6 +2406,7 @@ async function init() {
       if (panel) panel.style.display = 'none';
     }
     document.querySelectorAll('.attr-filter-panel').forEach(p => p.style.display = 'none');
+    _openAttrFilter = null;
   });
 
   // Manual add toggle
