@@ -506,6 +506,14 @@ function extractIdFromUrl(url) {
 }
 
 // ============================================================
+// YouTube embed helper
+// ============================================================
+function getYouTubeEmbedUrl(url) {
+  const m = (url || '').match(/(?:shorts\/|v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+  return m ? `https://www.youtube.com/embed/${m[1]}` : url;
+}
+
+// ============================================================
 // Lightbox
 // ============================================================
 function openLightbox(images, idx) {
@@ -795,16 +803,30 @@ function populateCard(card, car) {
 
   // Summary thumbnail
   const summaryImg = card.querySelector('.summary-img');
+  const summaryVid = card.querySelector('.summary-video');
   const thumbPh = card.querySelector('.thumb-placeholder');
   const summaryCounter = card.querySelector('.summary-img-counter');
-  if (car.images && car.images.length > 0) {
-    const sIdx = Math.min(parseInt(card.dataset.imgIdx || '0', 10), car.images.length - 1);
-    summaryImg.src = car.images[sIdx];
-    summaryImg.alt = car.name;
-    if (thumbPh) thumbPh.style.display = 'none';
-    if (summaryCounter) summaryCounter.textContent = car.images.length > 1 ? `${sIdx + 1}/${car.images.length}` : '';
+  const imgs = car.images || [];
+  const hasVideo = !!car.videoUrl;
+  const totalSlides = imgs.length + (hasVideo ? 1 : 0);
+  const rawIdx = parseInt(card.dataset.imgIdx || '0', 10);
+  const sIdx = totalSlides > 0 ? Math.min(rawIdx, totalSlides - 1) : 0;
+  const isVideoSlide = hasVideo && sIdx === imgs.length;
+  if (totalSlides > 0) {
+    if (isVideoSlide) {
+      if (summaryImg) { summaryImg.removeAttribute('src'); summaryImg.style.display = 'none'; }
+      if (summaryVid) { summaryVid.src = getYouTubeEmbedUrl(car.videoUrl); summaryVid.style.display = 'block'; }
+      if (thumbPh) thumbPh.style.display = 'none';
+    } else {
+      if (summaryImg) { summaryImg.src = imgs[sIdx]; summaryImg.alt = car.name; summaryImg.style.display = ''; }
+      if (summaryVid) { summaryVid.src = ''; summaryVid.style.display = 'none'; }
+      if (thumbPh) thumbPh.style.display = 'none';
+    }
+    if (summaryCounter) summaryCounter.textContent = totalSlides > 1 ? `${sIdx + 1}/${totalSlides}` : '';
+    if (totalSlides > 1) card.querySelector('.summary-thumb-wrap')?.classList.add('has-multiple');
   } else {
-    summaryImg.removeAttribute('src');
+    if (summaryImg) { summaryImg.removeAttribute('src'); summaryImg.style.display = ''; }
+    if (summaryVid) { summaryVid.src = ''; summaryVid.style.display = 'none'; }
     if (thumbPh) thumbPh.style.display = 'flex';
     if (summaryCounter) summaryCounter.textContent = '';
   }
@@ -1087,7 +1109,8 @@ function attachCardEvents(card, car) {
   // Summary image → lightbox at current slide
   card.querySelector('.summary-img').addEventListener('click', () => {
     const c = getCarById(carId);
-    if (c && c.images && c.images.length) openLightbox(c.images, parseInt(card.dataset.imgIdx || '0', 10));
+    const idx = parseInt(card.dataset.imgIdx || '0', 10);
+    if (c && c.images && c.images.length && idx < c.images.length) openLightbox(c.images, idx);
   });
 
   // Extra equipment
@@ -1182,18 +1205,29 @@ function attachCardEvents(card, car) {
 
   function setImgIdx(idx) {
     const c = getCarById(carId);
-    if (!c || !c.images.length) return;
+    const imgs = c?.images || [];
+    const hasVideo = !!(c?.videoUrl);
+    const total = imgs.length + (hasVideo ? 1 : 0);
+    if (!c || !total) return;
+    idx = ((idx % total) + total) % total;
     card.dataset.imgIdx = idx;
     const si = card.querySelector('.summary-img');
+    const sv = card.querySelector('.summary-video');
     const sc = card.querySelector('.summary-img-counter');
-    if (si) si.src = c.images[idx];
-    if (sc && c.images.length > 1) sc.textContent = `${idx + 1}/${c.images.length}`;
+    const isVideoSlide = hasVideo && idx === imgs.length;
+    if (si) { si.style.display = isVideoSlide ? 'none' : ''; if (!isVideoSlide && imgs[idx]) si.src = imgs[idx]; }
+    if (sv) {
+      if (isVideoSlide) { sv.src = getYouTubeEmbedUrl(c.videoUrl) + '?autoplay=1'; sv.style.display = 'block'; }
+      else { sv.src = ''; sv.style.display = 'none'; }
+    }
+    if (sc && total > 1) sc.textContent = `${idx + 1}/${total}`;
   }
 
   // Summary thumbnail: tap left/right half or swipe to navigate images
   const thumbWrap = card.querySelector('.summary-thumb-wrap');
   const initCarForThumb = getCarById(carId);
-  if (initCarForThumb && initCarForThumb.images && initCarForThumb.images.length > 1) {
+  const initTotal = (initCarForThumb?.images?.length || 0) + (initCarForThumb?.videoUrl ? 1 : 0);
+  if (initTotal > 1) {
     thumbWrap.classList.add('has-multiple');
   }
   let tsX = 0, wasSwiped = false;
@@ -1203,34 +1237,38 @@ function attachCardEvents(card, car) {
   }, { passive: true });
   thumbWrap.addEventListener('touchend', (e) => {
     const c = getCarById(carId);
-    if (!c || !c.images || c.images.length <= 1) return;
+    const total = (c?.images?.length || 0) + (c?.videoUrl ? 1 : 0);
+    if (!c || total <= 1) return;
     const dx = e.changedTouches[0].clientX - tsX;
     if (Math.abs(dx) > 25) {
       wasSwiped = true;
-      setImgIdx((parseInt(card.dataset.imgIdx || '0', 10) + (dx < 0 ? 1 : -1) + c.images.length) % c.images.length);
+      setImgIdx(parseInt(card.dataset.imgIdx || '0', 10) + (dx < 0 ? 1 : -1));
     }
   });
   thumbWrap.addEventListener('click', (e) => {
     if (wasSwiped) { wasSwiped = false; return; }
     const c = getCarById(carId);
-    if (!c || !c.images || c.images.length <= 1) return;
+    const total = (c?.images?.length || 0) + (c?.videoUrl ? 1 : 0);
+    if (!c || total <= 1) return;
     const rect = thumbWrap.getBoundingClientRect();
     const delta = (e.clientX - rect.left) < rect.width / 2 ? -1 : 1;
-    setImgIdx((parseInt(card.dataset.imgIdx || '0', 10) + delta + c.images.length) % c.images.length);
+    setImgIdx(parseInt(card.dataset.imgIdx || '0', 10) + delta);
   });
 
   // Summary thumbnail prev/next arrow buttons
   card.querySelector('.sum-slide-prev').addEventListener('click', (e) => {
     e.stopPropagation();
     const c = getCarById(carId);
-    if (!c || !c.images || c.images.length <= 1) return;
-    setImgIdx((parseInt(card.dataset.imgIdx || '0', 10) - 1 + c.images.length) % c.images.length);
+    const total = (c?.images?.length || 0) + (c?.videoUrl ? 1 : 0);
+    if (!c || total <= 1) return;
+    setImgIdx(parseInt(card.dataset.imgIdx || '0', 10) - 1);
   });
   card.querySelector('.sum-slide-next').addEventListener('click', (e) => {
     e.stopPropagation();
     const c = getCarById(carId);
-    if (!c || !c.images || c.images.length <= 1) return;
-    setImgIdx((parseInt(card.dataset.imgIdx || '0', 10) + 1) % c.images.length);
+    const total = (c?.images?.length || 0) + (c?.videoUrl ? 1 : 0);
+    if (!c || total <= 1) return;
+    setImgIdx(parseInt(card.dataset.imgIdx || '0', 10) + 1);
   });
 
   // Rank score info tooltip

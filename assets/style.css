@@ -819,6 +819,7 @@ body {
   background: var(--bg-elevated);
 }
 .summary-img:not([src=""]) ~ .thumb-placeholder { display: none; }
+.summary-video { display: none; width: 100%; height: 100%; border: none; background: #000; position: absolute; top: 0; left: 0; }
 
 /* Summary elements */
 .summary-specs { display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 0 8px; }
