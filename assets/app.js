@@ -123,6 +123,7 @@ const DEFAULT_SCORE_CONFIG = [
   { id: 'year',        label: 'Évjárat',                desc: 'minél újabb, annál jobb',      pts: 20, compute: 'year' },
   { id: 'phev',        label: 'PHEV (plug-in hibrid)',   desc: 'bónusz',                      pts: 10, compute: 'phev' },
   { id: 'hybrid',      label: 'Hybrid (HEV)',            desc: 'bónusz',                      pts:  5, compute: 'hybrid' },
+  { id: 'mild_hybrid', label: 'Mild Hibrid (MHEV/48V)', desc: 'bónusz',                      pts:  2, compute: 'mild_hybrid' },
   { id: 'auto',        label: 'Automata váltó',          desc: 'bónusz',                      pts: 10, compute: 'auto' },
   { id: 'consumption', label: 'Alacsony fogyasztás',     desc: '4,5 l/100km = max pt',        pts:  5, compute: 'consumption' },
   { id: 'new_car',     label: 'Új autó',                 desc: 'hozzáadott — bónusz',         pts:  5, compute: 'new_car' },
@@ -614,7 +615,8 @@ function computeScorePart(car, item) {
     case 'year':     return car.year     ? Math.max(0, Math.min(pts, (car.year - 2010) / 16 * pts))                : 0;
     case 'consumption': return car.consumption != null ? Math.max(0, Math.min(pts, pts * (1 - (car.consumption - 4.5) / 3))) : 0;
     case 'phev':     { const f=(car.fuel||'').toLowerCase(); return (f.includes('plug-in')||f.includes('plugin')) ? pts : 0; }
-    case 'hybrid':   { const f=(car.fuel||'').toLowerCase(); return f.includes('hibrid')&&!f.includes('plug-in')&&!f.includes('plugin') ? pts : 0; }
+    case 'hybrid':   { const f=(car.fuel||'').toLowerCase(); return f.includes('hibrid')&&!f.includes('plug-in')&&!f.includes('plugin')&&!f.includes('mild') ? pts : 0; }
+    case 'mild_hybrid': { const f=(car.fuel||'').toLowerCase(); return f.includes('mild') ? pts : 0; }
     case 'electric': return (car.fuel||'').toLowerCase().includes('elektromos') ? pts : 0;
     case 'auto':     { const t=(car.transmission||'').toLowerCase(); return (t.includes('automat')||t.includes('fokozatmentes')||t.includes('tiptronic')||t.includes('dct')||t.includes('cvt')) ? pts : 0; }
     case 'new_car':  return car.carConditionLabel === 'new' ? pts : 0;
