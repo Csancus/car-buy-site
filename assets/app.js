@@ -107,6 +107,7 @@ let autoRanks = {};
 let activePersonFilter  = null;
 let lightboxImages = [];
 let lightboxIdx = 0;
+let compareSet = new Set();
 let activeSortBy        = 'rank';  // 'rank' | 'price_asc' | 'price_desc'
 let activeQuickFilters  = new Set();
 let activeAttrFilters   = { brand: new Set(), model: new Set(), fuel: new Set(), transmission: new Set(), condition: new Set(), year: new Set() };
@@ -515,6 +516,108 @@ function getYouTubeEmbedUrl(url) {
 }
 
 // ============================================================
+// Compare
+// ============================================================
+const COMPARE_MAX = 4;
+
+function updateCompareBar() {
+  const bar = document.getElementById('compareBar');
+  const cnt = document.getElementById('compareCount');
+  if (!bar) return;
+  bar.style.display = compareSet.size > 0 ? 'flex' : 'none';
+  if (cnt) cnt.textContent = compareSet.size;
+  document.querySelectorAll('.btn-compare').forEach(btn => {
+    const id = String(btn.closest('.car-card')?.dataset?.id || '');
+    btn.classList.toggle('is-selected', compareSet.has(id));
+  });
+}
+
+function toggleCompare(carId) {
+  const id = String(carId);
+  if (compareSet.has(id)) {
+    compareSet.delete(id);
+  } else {
+    if (compareSet.size >= COMPARE_MAX) {
+      alert(`Legfeljebb ${COMPARE_MAX} autót lehet egyszerre összehasonlítani.`);
+      return;
+    }
+    compareSet.add(id);
+  }
+  updateCompareBar();
+}
+
+function openCompareModal() {
+  const modal = document.getElementById('compareModal');
+  if (!modal) return;
+  renderCompareTable();
+  modal.classList.add('visible');
+}
+
+function closeCompareModal() {
+  const modal = document.getElementById('compareModal');
+  if (modal) modal.classList.remove('visible');
+}
+
+function renderCompareTable() {
+  const table = document.getElementById('compareTable');
+  if (!table) return;
+  const selected = [...compareSet].map(id => cars.find(c => String(c.id) === id)).filter(Boolean);
+  if (!selected.length) { table.innerHTML = ''; return; }
+
+  const fmt = (v) => v != null && v !== '' ? v : '—';
+  const rows = [
+    ['Név',         c => `<span class="cmp-car-name">${escHtml(c.name || '')}</span>`],
+    ['Ár',          c => `<span class="cmp-price">${c.price ? c.price.toLocaleString('hu-HU') + ' Ft' : '—'}</span>`],
+    ['Évjárat',     c => fmt(c.year)],
+    ['Km-óra',      c => c.mileage != null ? formatMileage(c.mileage) : '—'],
+    ['Üzemanyag',   c => fmt(c.fuel)],
+    ['Váltó',       c => fmt(c.transmission)],
+    ['Fogyasztás',  c => c.consumption != null ? c.consumption + ' l/100km' : '—'],
+    ['Teljesítmény',c => fmt(c.performance)],
+    ['Szín',        c => fmt(c.color)],
+    ['Karosszéria', c => fmt(c.bodyType)],
+    ['Állapot',     c => fmt(c.condition)],
+    ['Helyszín',    c => fmt(c.sellerLocation)],
+    ['Eladó',       c => fmt(c.sellerType === 'private' ? 'Magánszemély' : c.sellerName)],
+    ['Top 5',       c => (c.top5 || []).map(t => `<span class="cmp-badge">${escHtml(t)}</span>`).join('') || '—'],
+  ];
+
+  let html = '<thead><tr><th></th>';
+  for (const c of selected) {
+    html += `<th>${escHtml(c.name || '')} <span class="compare-remove-col" data-cid="${escHtml(String(c.id))}" title="Eltávolítás">✕</span></th>`;
+  }
+  html += '</tr></thead><tbody>';
+  for (const [label, fn] of rows) {
+    html += `<tr><th>${escHtml(label)}</th>`;
+    for (const c of selected) html += `<td>${fn(c)}</td>`;
+    html += '</tr>';
+  }
+  html += '</tbody>';
+  table.innerHTML = html;
+
+  table.querySelectorAll('.compare-remove-col').forEach(btn => {
+    btn.addEventListener('click', () => {
+      compareSet.delete(btn.dataset.cid);
+      updateCompareBar();
+      if (compareSet.size === 0) { closeCompareModal(); return; }
+      renderCompareTable();
+    });
+  });
+}
+
+function initCompare() {
+  document.getElementById('compareBarOpen')?.addEventListener('click', openCompareModal);
+  document.getElementById('compareBarClear')?.addEventListener('click', () => {
+    compareSet.clear();
+    updateCompareBar();
+  });
+  document.getElementById('compareClose')?.addEventListener('click', closeCompareModal);
+  document.getElementById('compareModal')?.addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeCompareModal();
+  });
+}
+
+// ============================================================
 // Lightbox
 // ============================================================
 function openLightbox(images, idx) {
@@ -912,6 +1015,15 @@ function populateCard(card, car) {
   // Name + price
   card.querySelector('.car-name').textContent = car.name || 'Ismeretlen';
   card.querySelector('.car-price').textContent = car.price ? formatPrice(car.price) : '—';
+  const loanEl = card.querySelector('.car-loan-fee');
+  if (loanEl) {
+    if (car.loanFee) {
+      loanEl.textContent = `+ ${formatPrice(car.loanFee)} hiteldíj/hó`;
+      loanEl.style.display = '';
+    } else {
+      loanEl.style.display = 'none';
+    }
+  }
 
   // Summary spec badges
   const setSum = (cls, val) => {
@@ -1328,6 +1440,15 @@ function attachCardEvents(card, car) {
     });
   }
 
+  // Compare
+  const btnCompare = card.querySelector('.btn-compare');
+  if (btnCompare) {
+    btnCompare.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleCompare(carId);
+    });
+  }
+
   // Edit car
   const btnEditCar = card.querySelector('.btn-edit-car');
   if (btnEditCar) {
@@ -1523,7 +1644,7 @@ async function saveEditModal() {
     const raw = el.value.trim();
     if (['images', 'top5', 'equipment'].includes(field)) {
       updates[field] = raw.split('\n').map(s => s.trim()).filter(Boolean);
-    } else if (['year', 'price', 'mileage', 'trunkVolume'].includes(field)) {
+    } else if (['year', 'price', 'mileage', 'trunkVolume', 'loanFee'].includes(field)) {
       updates[field] = raw ? parseInt(raw, 10) : null;
     } else if (field === 'consumption') {
       updates[field] = raw ? parseFloat(raw) : null;
@@ -2278,7 +2399,7 @@ function initSortable() {
     ghostClass: 'sortable-ghost',
     dragClass: 'sortable-drag',
     handle: '.card-header-row',
-    filter: '.btn-archive, .btn-edit-car, .btn-avail, .status-select, .slide-btn, .btn-toggle-equip, a',
+    filter: '.btn-archive, .btn-edit-car, .btn-avail, .btn-compare, .status-select, .slide-btn, .btn-toggle-equip, a',
     preventOnFilter: false,
     onEnd: async () => {
       const cardEls = grid.querySelectorAll('.car-card');
@@ -2411,6 +2532,7 @@ async function init() {
     cars = loadFromStorage() || [];
   }
   renderAll();
+  initCompare();
 
   // Add car button
   document.getElementById('btnAdd').addEventListener('click', handleAddCar);

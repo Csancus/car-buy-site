@@ -210,6 +210,9 @@
         </div>
         <div class="summary-body">
           <div class="card-top-actions">
+            <button class="btn-compare" title="Összehasonlításhoz ad">
+              <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+            </button>
             <button class="btn-edit-car" title="Szerkesztés">
               <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
             </button>
@@ -228,6 +231,7 @@
             </div>
           </div>
           <div class="car-price"></div>
+          <div class="car-loan-fee"></div>
           <div class="summary-specs">
             <span class="sum-badge sum-year"></span>
             <span class="sum-badge sum-km"></span>
@@ -490,6 +494,7 @@
           <label class="edit-field"><span class="ef-label">Modell</span><input type="text" class="ef-input" data-field="model" /></label>
           <label class="edit-field"><span class="ef-label">Évjárat</span><input type="number" class="ef-input" data-field="year" min="1990" max="2035" /></label>
           <label class="edit-field"><span class="ef-label">Ár (Ft)</span><input type="number" class="ef-input" data-field="price" min="0" step="100000" /></label>
+          <label class="edit-field"><span class="ef-label">Hiteldíj/hó (Ft)</span><input type="number" class="ef-input" data-field="loanFee" min="0" step="1000" placeholder="Opcionális" /></label>
           <label class="edit-field"><span class="ef-label">Km-óraállás</span><input type="number" class="ef-input" data-field="mileage" min="0" step="1000" /></label>
         </div>
 
@@ -546,6 +551,26 @@
           <svg class="ic" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
           Mentés
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Compare floating bar -->
+  <div id="compareBar" class="compare-bar" style="display:none">
+    <span class="compare-bar-label"><span id="compareCount">0</span> autó kijelölve</span>
+    <button id="compareBarOpen" class="compare-bar-btn">Összehasonlítás</button>
+    <button id="compareBarClear" class="compare-bar-clear">✕ Törlés</button>
+  </div>
+
+  <!-- Compare modal -->
+  <div id="compareModal" class="modal-overlay compare-overlay">
+    <div class="compare-box">
+      <div class="compare-header">
+        <span class="compare-title">Összehasonlítás</span>
+        <button id="compareClose" class="compare-close">✕</button>
+      </div>
+      <div class="compare-table-wrap">
+        <table id="compareTable" class="compare-table"></table>
       </div>
     </div>
   </div>

@@ -2268,3 +2268,75 @@ body {
   transition: color var(--transition), background var(--transition);
 }
 .edit-comment-del:hover { color: #ef4444; background: rgba(239,68,68,.1); }
+
+/* ============================================================
+   Compare feature
+   ============================================================ */
+.btn-compare {
+  background: none; border: 1px solid var(--border); border-radius: 6px;
+  padding: 3px 6px; cursor: pointer; color: var(--text-dim);
+  transition: color var(--transition), background var(--transition), border-color var(--transition);
+  display: flex; align-items: center;
+}
+.btn-compare:hover { color: var(--accent); border-color: var(--accent); }
+.btn-compare.is-selected { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-compare .ic { width: 14px; height: 14px; }
+
+.compare-bar {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 900;
+  background: var(--bg-card); border-top: 1px solid var(--border);
+  box-shadow: 0 -4px 20px rgba(0,0,0,.12);
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 20px;
+}
+.compare-bar-label { font-size: .9rem; color: var(--text-dim); flex: 1; }
+.compare-bar-btn {
+  background: var(--accent); color: #fff; border: none; border-radius: 8px;
+  padding: 8px 20px; font-size: .9rem; font-weight: 600; cursor: pointer;
+}
+.compare-bar-clear {
+  background: none; border: 1px solid var(--border); border-radius: 8px;
+  padding: 7px 14px; font-size: .85rem; cursor: pointer; color: var(--text-dim);
+}
+
+.compare-overlay { z-index: 1100; }
+.compare-box {
+  background: var(--bg-card); border-radius: 16px;
+  width: min(98vw, 1100px); max-height: 90vh;
+  display: flex; flex-direction: column; overflow: hidden;
+  margin: auto;
+}
+.compare-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.compare-title { font-size: 1.1rem; font-weight: 700; }
+.compare-close {
+  background: none; border: none; font-size: 1.2rem; cursor: pointer;
+  color: var(--text-dim); padding: 4px 8px; border-radius: 6px;
+}
+.compare-close:hover { background: var(--bg-elevated); }
+.compare-table-wrap { overflow: auto; flex: 1; padding: 16px; }
+.compare-table { border-collapse: collapse; width: 100%; min-width: 500px; }
+.compare-table th, .compare-table td {
+  padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border);
+  vertical-align: top; font-size: .88rem;
+}
+.compare-table th { background: var(--bg-elevated); font-weight: 600; white-space: nowrap; width: 130px; }
+.compare-table td { min-width: 180px; }
+.compare-table .cmp-car-name { font-weight: 700; font-size: .95rem; }
+.compare-table .cmp-price { color: var(--accent); font-weight: 700; font-size: 1rem; }
+.compare-table .cmp-badge { display: inline-block; background: var(--bg-elevated); border-radius: 5px; padding: 2px 7px; margin: 2px 2px 2px 0; font-size: .78rem; }
+.compare-table tr:hover td { background: var(--bg-elevated); }
+.compare-remove-col { cursor: pointer; color: var(--text-dim); font-size: .8rem; }
+.compare-remove-col:hover { color: #ef4444; }
+
+.car-loan-fee {
+  font-size: .82rem;
+  color: var(--text-dim);
+  margin-top: -2px;
+  margin-bottom: 4px;
+}
+.compare-overlay.visible { opacity: 1; pointer-events: all; }
+.compare-overlay.visible .compare-box { transform: scale(1) translateY(0); opacity: 1; }
+.compare-box { transform: scale(0.97) translateY(10px); opacity: 0; transition: transform .2s, opacity .2s; }
