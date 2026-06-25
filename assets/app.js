@@ -119,7 +119,7 @@ let manualImageDataUrls = [];
 
 const DEFAULT_SCORE_CONFIG = [
   { id: 'price',       label: 'Ár',                    desc: 'minél olcsóbb, annál jobb',   pts: 40, compute: 'price' },
-  { id: 'mileage',     label: 'Km-óraállás',            desc: 'minél kevesebb, annál jobb',  pts: 25, compute: 'mileage' },
+  { id: 'mileage',     label: 'Km-óraállás',            desc: 'minél kevesebb, annál jobb',  pts: 20, compute: 'mileage' },
   { id: 'year',        label: 'Évjárat',                desc: 'minél újabb, annál jobb',      pts: 20, compute: 'year' },
   { id: 'phev',        label: 'PHEV (plug-in hibrid)',   desc: 'bónusz',                      pts: 10, compute: 'phev' },
   { id: 'hybrid',      label: 'Hybrid (HEV)',            desc: 'bónusz',                      pts:  5, compute: 'hybrid' },
