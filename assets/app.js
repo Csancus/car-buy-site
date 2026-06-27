@@ -1923,6 +1923,9 @@ function applyFilters() {
     }
     cardEl.style.display = v ? '' : 'none';
   }
+  const visible = grid.querySelectorAll('.car-card:not([style*="display: none"]):not([style*="display:none"])').length;
+  const lbl = document.getElementById('carsCountLabel');
+  if (lbl) lbl.textContent = `${visible} autó`;
 }
 
 // ============================================================

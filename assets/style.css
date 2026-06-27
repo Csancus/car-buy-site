@@ -2340,3 +2340,10 @@ body {
 .compare-overlay.visible { opacity: 1; pointer-events: all; }
 .compare-overlay.visible .compare-box { transform: scale(1) translateY(0); opacity: 1; }
 .compare-box { transform: scale(0.97) translateY(10px); opacity: 0; transition: transform .2s, opacity .2s; }
+
+.cars-count-bar {
+  text-align: right;
+  padding: 6px 16px 2px;
+  font-size: .82rem;
+  color: var(--text-dim);
+}
