@@ -896,6 +896,12 @@ function populateCard(card, car) {
   card.classList.toggle('is-archived', status === 'archived');
   const statusSel = card.querySelector('.status-select');
   if (statusSel) statusSel.value = status;
+  const btnArchive = card.querySelector('.btn-archive');
+  if (btnArchive) {
+    const isArchived = status === 'archived';
+    btnArchive.title = isArchived ? 'Visszaállítás (archiváltból)' : 'Archiválás';
+    btnArchive.classList.toggle('is-unarchive', isArchived);
+  }
 
   // Available badge
   const avail = car.available !== false;
@@ -1498,15 +1504,16 @@ function attachCardEvents(card, car) {
     if (addLinkNameInput) addLinkNameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') addLinkInput.focus(); if (e.key === 'Escape') { addLinkForm.style.display = 'none'; btnAddLink.style.display = ''; } });
   }
 
-  // Archive button (quick archive)
+  // Archive button (toggle archive/unarchive)
   card.querySelector('.btn-archive').addEventListener('click', async () => {
     const c = getCarById(carId);
     if (!c) return;
-    c.status = 'archived';
+    const newStatus = c.status === 'archived' ? 'active' : 'archived';
+    c.status = newStatus;
     saveToStorage();
     populateCard(card, c);
     applyFilters();
-    await apiUpdateCar(carId, { status: 'archived' });
+    await apiUpdateCar(carId, { status: newStatus });
   });
 
   // Status dropdown
